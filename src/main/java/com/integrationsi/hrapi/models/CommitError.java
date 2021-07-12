@@ -8,6 +8,14 @@ public class CommitError {
 	private CommitStatus status;
 	private Error error;
 	
+	public Error getError() {
+		return error;
+	}
+
+	public void setError(Error error) {
+		this.error = error;
+	}
+
 	public CommitError(HRDossier d, Error error) {
 		this.dossier = d;
 		this.error = error; 

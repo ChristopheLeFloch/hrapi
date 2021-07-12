@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hraccess.openhr.IHRUser;
-import com.integrationsi.hrapi.models.Employee;
 
 
 
@@ -19,13 +18,17 @@ public class User {
 
     private String code;
     private String label;
-    private Employee employee;
-    public Employee getEmployee() {
-		return employee;
+    private String matcle;
+
+
+
+	public String getMatcle() {
+		return matcle;
 	}
 
-	public void setEmployee(Employee employee) {
-		this.employee = employee;
+
+	public void setMatcle(String matcle) {
+		this.matcle = matcle;
 	}
 
 

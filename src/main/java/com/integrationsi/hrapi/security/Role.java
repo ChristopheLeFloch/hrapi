@@ -1,7 +1,6 @@
 package com.integrationsi.hrapi.security;
 
 import com.hraccess.openhr.IHRRole;
-import com.integrationsi.hrapi.models.Employee;
 
 public class Role {
 	
@@ -9,8 +8,18 @@ public class Role {
 	private String value;	
 	private String label;
 	private Category category;
-	private Employee employee;
+	private String matcle;
 	
+	public String getMatcle() {
+		return matcle;
+	}
+
+
+	public void setMatcle(String matcle) {
+		this.matcle = matcle;
+	}
+
+
 	public Role() {
 		
 	}
@@ -68,14 +77,6 @@ public class Role {
 	}
 
 
-	public void setEmployee(Employee employee) {
-		this.employee = employee;		
-	}
 
-
-	public Employee getEmployee() {
-		return employee;		
-	}
-	
 
 }
