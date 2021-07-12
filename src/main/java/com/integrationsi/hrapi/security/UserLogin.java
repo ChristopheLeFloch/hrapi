@@ -1,10 +1,6 @@
-package com.integrationsi.hrapi.models;
+package com.integrationsi.hrapi.security;
 
-/**
- * Classe modélisant une demande de connexion d'un utilisateur.
- * @author CLEFL
- *
- */
+
 public class UserLogin {
     
     private String user;

@@ -1,4 +1,4 @@
-package com.integrationsi.hrapi.models;
+package com.integrationsi.hrapi.commit;
 
 public enum ErrorLevel {
 

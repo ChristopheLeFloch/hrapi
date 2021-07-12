@@ -3,15 +3,11 @@ package com.integrationsi.hrapi.security;
 
 import com.hraccess.openhr.IHRRole;
 import com.hraccess.openhr.IHRUser;
-import com.hraccess.openhr.UpdateMode;
-import com.hraccess.openhr.beans.HRDataSourceParameters;
 import com.hraccess.openhr.dossier.HRDossierCollection;
 import com.hraccess.openhr.dossier.HRDossierCollectionParameters;
 import com.hraccess.openhr.dossier.HRDossierFactory;
 import com.hraccess.openhr.msg.HRMsgDressSqlStatement;
 import com.hraccess.openhr.msg.HRResultDressSqlStatement;
-import com.integrationsi.hrapi.models.Category;
-import com.integrationsi.hrapi.models.UserLogin;
 import com.integrationsi.hrapi.session.SessionException;
 import com.integrationsi.hrapi.session.SessionManager;
 

@@ -1,11 +1,10 @@
-package com.integrationsi.hrapi.models;
+package com.integrationsi.hrapi.commit;
 
 import com.hraccess.openhr.dossier.HRDossier;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
 
-public class CommitError {
+public class BusinessCommitError {
 	private HRDossier dossier;
-	private CommitStatus status;
 	private Error error;
 	
 	public Error getError() {
@@ -16,18 +15,12 @@ public class CommitError {
 		this.error = error;
 	}
 
-	public CommitError(HRDossier d, Error error) {
+	public BusinessCommitError(HRDossier d, Error error) {
 		this.dossier = d;
 		this.error = error; 
 		
 	}
 	
-	public CommitStatus getStatus() {
-		return status;
-	}
-	public void setStatus(CommitStatus status) {
-		this.status = status;
-	}
 	public HRDossier getDossier() {
 		return dossier;
 	}
