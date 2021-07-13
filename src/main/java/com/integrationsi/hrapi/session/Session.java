@@ -7,6 +7,11 @@ import com.hraccess.openhr.exception.AuthenticationException;
 import com.hraccess.openhr.exception.SessionBuildException;
 import com.hraccess.openhr.exception.SessionConnectionException;
 import com.hraccess.openhr.exception.UserConnectionException;
+import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
+import com.integrationsi.hrapi.hrentity.HrOccur;
+
+import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
