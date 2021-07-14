@@ -32,6 +32,7 @@ import com.integrationsi.hrapi.util.SqlUtils;
 import com.integrationsi.hrapi.commit.BusinessCommitError;
 import com.integrationsi.hrapi.commit.CommitStatus;
 import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
+import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.hrentity.HrOccur;
 
@@ -188,7 +189,7 @@ public class User {
 		} catch (HRDossierCollectionCommitException e) {
 			e.printStackTrace();
 			result.setStatus(CommitStatus.KO);
-			result.addTechnicalError(TechnicalError.UNKNOWN);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.UNKNOWN, e.getMessage()));
 			return result;
 		}
 		

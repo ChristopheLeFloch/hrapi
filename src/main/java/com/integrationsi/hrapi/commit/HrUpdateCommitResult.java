@@ -34,17 +34,17 @@ public class HrUpdateCommitResult {
 	/**
 	 * Liste des erreurs  metier retournees par le commit
 	 */
-	private List<TechnicalError> technicalErrors;
-	public List<TechnicalError> getTechnicalErrors() {
+	private List<TechnicalCommitError> technicalErrors;
+	public List<TechnicalCommitError> getTechnicalErrors() {
 		return technicalErrors;
 	}
-	public void setTechnicalErrors(List<TechnicalError> errors) {
+	public void setTechnicalErrors(List<TechnicalCommitError> errors) {
 		this.technicalErrors = errors;
 	}
 	
 	
-	public void addTechnicalError(TechnicalError e) {
-		if (this.technicalErrors == null) this.technicalErrors = new ArrayList<TechnicalError>();
+	public void addTechnicalError(TechnicalCommitError e) {
+		if (this.technicalErrors == null) this.technicalErrors = new ArrayList<TechnicalCommitError>();
 		this.technicalErrors.add(e);
 		
 	}
