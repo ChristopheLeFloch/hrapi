@@ -18,12 +18,15 @@ public  interface HrEntity  {
 
 	int getNudoss();		
 
+	 int getNulign();
+
+
 	String getMainStructure();	
 	String getMainInformation();
 	
-	public abstract Map<String, Object> getHrEntityMap();
+	Map<String, Object> getHrEntityMap();
 	
-	public abstract Object[] getHrEntityKey();
+	Object[] getHrEntityKey();
 
 
 }

@@ -1,25 +1,38 @@
 package com.integrationsi.hrapi.security;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.net.ssl.SSLEngineResult.Status;
 
 import com.hraccess.openhr.IHRConversation;
 import com.hraccess.openhr.IHRRole;
 import com.hraccess.openhr.IHRUser;
 import com.hraccess.openhr.UpdateMode;
 import com.hraccess.openhr.beans.HRDataSourceParameters;
+import com.hraccess.openhr.dossier.HRDataSect;
+import com.hraccess.openhr.dossier.HRDossier;
 import com.hraccess.openhr.dossier.HRDossierCollection;
+import com.hraccess.openhr.dossier.HRDossierCollection.CommitResult;
+import com.hraccess.openhr.dossier.HRDossierCollectionCommitException;
 import com.hraccess.openhr.dossier.HRDossierCollectionException;
 import com.hraccess.openhr.dossier.HRDossierCollectionParameters;
 import com.hraccess.openhr.dossier.HRDossierFactory;
 import com.hraccess.openhr.dossier.HRDossierListIterator;
-
+import com.hraccess.openhr.dossier.HRKey;
+import com.hraccess.openhr.dossier.HROccur;
+import com.hraccess.openhr.dossier.IHRKey;
+import com.hraccess.openhr.msg.HRResultUserError.Error;
 import com.integrationsi.hrapi.util.SqlUtils;
-
+import com.integrationsi.hrapi.commit.BusinessCommitError;
+import com.integrationsi.hrapi.commit.CommitStatus;
 import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
+import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.hrentity.HrOccur;
 
 
@@ -113,14 +126,16 @@ public class User {
 	}
 	
 
-	public HrUpdateCommitResult commitOccurs(String processus, List<HrOccur> data) throws HRDossierCollectionException {
+	public HrUpdateCommitResult commitOccurs(String processus, List<HrOccur> data)
+			throws HRDossierCollectionException {
 		
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 		
 		if (data.size() == 0) return result;
 		
 		// liste des cles a traiter
-		Set<Integer> keys = new HashSet<Integer>();
+		Map<Integer, List<HrOccur>> map = new HashMap<Integer, List<HrOccur>>();
+		
 		// liste des informations à traiter
 		HashSet<String> informations = new HashSet<String>();
 		// structure à traiter
@@ -129,17 +144,74 @@ public class User {
 		// construction de la liste des dossiers à traiter
 		// et de la liste des informations à traiter
 		data.forEach((d) -> {
-			keys.add(d.getNudoss());
-			informations.add(d.getMainInformation());
+			List<HrOccur> occurs = map.get(d.getNudoss());
+			if (occurs == null) {
+				occurs = new ArrayList<HrOccur>();
+				map.put(d.getNudoss(), occurs);
+			}
+			occurs.add(d);
 		});
 
-		HRDossierListIterator iterators = this.loadDossiers(processus, structure, new ArrayList(informations), new ArrayList(keys));
+		ArrayList keys = new ArrayList(map.keySet());
+		
+		HRDossierCollection collection = this.initDossierCollection(processus, structure, new ArrayList(informations), keys);
 
-		return null;
+		String select = "select nudoss from ZY00 where nudoss in " + SqlUtils.getSqlNudossList(keys);
+		HRDossierListIterator iterator = collection.loadDossiers(select); 
+		
+		while (iterator.hasNext()) {
+			HRDossier hrDossier = iterator.next();
+			List<HrOccur> occurs = map.get(hrDossier.getNudoss());
+			
+			for (HrOccur o: occurs) {
+				HRDataSect dataSection = hrDossier.getDataSectionByName(o.getMainInformation());
+
+				// Récupération de l'occurrence
+				HROccur hrOccur = null;
+				if (o.getNulign() == -1 ) { // création
+					HRKey k = new HRKey(o.getHrEntityKey());
+					hrOccur = dataSection.createOccur(k);
+				} else { //modification
+					hrOccur = dataSection.getOccurByNulign(o.getNulign());
+				}				
+				// Modification des valeurs
+				for (Map.Entry<String, Object> entry: o.getHrEntityMap().entrySet() ) {
+					hrOccur.setValue(entry.getKey(), entry.getValue());
+				}
+			};
+		}
+		
+
+		CommitResult r;
+		try {
+			r = collection.commitAllDossiers().getDossierCommitResult();
+		} catch (HRDossierCollectionCommitException e) {
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(TechnicalError.UNKNOWN);
+			return result;
+		}
+		
+		Error[] errors = r.getErrors();
+		if (errors.length == 0) {
+			result.setStatus(CommitStatus.OK);
+			return result;
+		}
+		
+		result.setStatus(CommitStatus.HR_ERRORS);
+		for (com.hraccess.openhr.msg.HRResultUserError.Error error : r.getErrors()) {
+            if (error.weight == 5) {    
+            	IHRKey key = r.getErrorDossierId(error).getDossierKey();
+            	HRDossier d = collection.getDossier(key);
+            	result.addBusinessError(d, error);
+            }
+		}
+		
+		return result;
 	}
 
 	
-	public HRDossierListIterator loadDossiers(String processus, String structure, List<String> informations, List<Long> keys) throws HRDossierCollectionException {
+	public HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations, List<Long> keys) throws HRDossierCollectionException {
 
 		HRDossierCollectionParameters dossierCollectionParameters =new HRDossierCollectionParameters();
 		dossierCollectionParameters.addDataSection(new HRDataSourceParameters.DataSection("00"));
@@ -151,14 +223,10 @@ public class User {
 		informations.forEach( i -> dossierCollectionParameters.addDataSection(new HRDataSourceParameters.DataSection(i)));
 		   	
 		//Instantiating a new dossier collection with given role, conversation and configuration
-		HRDossierCollection hrDossierCollection = new HRDossierCollection(dossierCollectionParameters,	
+		return new HRDossierCollection(dossierCollectionParameters,	
 										this.conversation,	
 										hrRole,
 										new HRDossierFactory(HRDossierFactory.TYPE_DOSSIER));
-		
-		String select = "select nudoss from ZY00 where nudoss in " + SqlUtils.getSqlNudossList(new ArrayList(keys));
-		HRDossierListIterator hrDossierListIterator = hrDossierCollection.loadDossiers(select); 
-		return hrDossierListIterator;
 		
 	}
 		

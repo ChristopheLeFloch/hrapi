@@ -1,6 +1,10 @@
 package com.integrationsi.hrapi.commit;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.hraccess.openhr.dossier.HRDossier;
+import com.hraccess.openhr.msg.HRResultUserError.Error;
 
 public class HrUpdateCommitResult {
 	
@@ -30,12 +34,23 @@ public class HrUpdateCommitResult {
 	/**
 	 * Liste des erreurs  metier retournees par le commit
 	 */
-	private List<TechnicalCommitError> technicalErrors;
-	public List<TechnicalCommitError> getTechnicalErrors() {
+	private List<TechnicalError> technicalErrors;
+	public List<TechnicalError> getTechnicalErrors() {
 		return technicalErrors;
 	}
-	public void setTechnicalErrors(List<TechnicalCommitError> errors) {
+	public void setTechnicalErrors(List<TechnicalError> errors) {
 		this.technicalErrors = errors;
+	}
+	
+	
+	public void addTechnicalError(TechnicalError e) {
+		if (this.technicalErrors == null) this.technicalErrors = new ArrayList<TechnicalError>();
+		this.technicalErrors.add(e);
+		
+	}
+	public void addBusinessError(HRDossier d, Error e) {
+		if (this.businessErrors == null) this.businessErrors = new ArrayList<BusinessCommitError>();
+		this.businessErrors.add(new BusinessCommitError(d, e));
 	}
 	
 	

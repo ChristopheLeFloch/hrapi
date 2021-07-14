@@ -4,6 +4,7 @@ import com.hraccess.openhr.dossier.HRDossier;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
 
 public class BusinessCommitError {
+
 	private HRDossier dossier;
 	private Error error;
 	
@@ -27,5 +28,6 @@ public class BusinessCommitError {
 	public void setDossier(HRDossier dossier) {
 		this.dossier = dossier;
 	}
+	
 
 }

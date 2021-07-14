@@ -8,6 +8,12 @@ public class HrOccur implements HrEntity{
 	private String information;
 	private Map<String, Object> values;
 	private Object[] keys;
+	private int nulign;
+	@Override
+	public int getNulign() {
+		return nulign;
+	}
+
 	
 	@Override
 	public int getNudoss() {
