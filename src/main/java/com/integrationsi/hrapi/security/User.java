@@ -6,9 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-
-import javax.net.ssl.SSLEngineResult.Status;
 
 import com.hraccess.openhr.IHRConversation;
 import com.hraccess.openhr.IHRRole;
@@ -28,13 +25,12 @@ import com.hraccess.openhr.dossier.HRKey;
 import com.hraccess.openhr.dossier.HROccur;
 import com.hraccess.openhr.dossier.IHRKey;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
-import com.integrationsi.hrapi.util.SqlUtils;
-import com.integrationsi.hrapi.commit.BusinessCommitError;
 import com.integrationsi.hrapi.commit.CommitStatus;
 import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
 import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.hrentity.HrOccur;
+import com.integrationsi.hrapi.util.SqlUtils;
 
 
 
@@ -212,7 +208,7 @@ public class User {
 	}
 
 	
-	public HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations, List<Long> keys) throws HRDossierCollectionException {
+	private HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations, List<Long> keys) throws HRDossierCollectionException {
 
 		HRDossierCollectionParameters dossierCollectionParameters =new HRDossierCollectionParameters();
 		dossierCollectionParameters.addDataSection(new HRDataSourceParameters.DataSection("00"));
