@@ -226,6 +226,12 @@ public class User {
 										new HRDossierFactory(HRDossierFactory.TYPE_DOSSIER));
 		
 	}
+
+
+	public boolean isConnected() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 		
 		
 
