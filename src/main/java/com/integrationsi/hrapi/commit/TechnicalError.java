@@ -7,7 +7,8 @@ public enum TechnicalError {
 	COMMIT_COLLECTION("04", "Commit des dossiers", "Le commit des dossiers n'a pas pu se faire correctement."),
 	CREATE_OCCUR("04", "Création occurrence", "La création d'une occurrence est en erreur."),
 	UNKNOWN_OCCUR("04", "L'occurrence n'existe plus", "Une occurrence à mettre à jour n'existe plus."),
-	BAD_DATA_FORMAT("05", "Problème format de données", "Les données mise à jour ne sont pas au bon format.");	
+	BAD_DATA_FORMAT("05", "Problème format de données", "Les données mise à jour ne sont pas au bon format."),
+	DELETE_ERROR("06", "Problème lors de la suppression de données", "Des données ne peuvent pas être suprrimées.");	
 	
     String code;
     String label;

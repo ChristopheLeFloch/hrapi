@@ -120,7 +120,7 @@ public class User {
 	 * @param bulkData
 	 * @return
 	 */
-	public  HrUpdateCommitResult bulkUpdate(String processus, List<ResourceBulkData> bulkDatas) {
+	public HrUpdateCommitResult bulkUpdate(String processus, List<ResourceBulkData> bulkDatas) {
 
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 
@@ -128,29 +128,43 @@ public class User {
 			return result;
 
 		// liste des cles a traiter
-		Map<Integer, List<HrEntity>> map = new HashMap<Integer, List<HrEntity>>();
+		Map<Integer, List<HrEntity>> updateMap = new HashMap<Integer, List<HrEntity>>();
+		Map<Integer, List<HrEntity>> deleteMap = new HashMap<Integer, List<HrEntity>>();
 
 		// liste des informations à traiter
 		HashSet<String> informations = new HashSet<String>();
 		// structure à traiter
-		String structure = bulkDatas.get(0).getMainStructure();
+		String structure = bulkDatas.get(0).getEntity().getMainStructure();
 
 		// construction de la liste des dossiers à traiter
 		// et de la liste des informations à traiter
-		bulkData.forEach((d) -> {
-			List<HrEntity> occurs = map.get(d.getNudoss());
+		bulkDatas.forEach((d) -> {
+			Map<Integer, List<HrEntity>> map = null;
+			if (d.getMethod() == ResourceBulkData.Method.PUT || d.getMethod() == ResourceBulkData.Method.POST
+					|| d.getMethod() == ResourceBulkData.Method.CREATE)
+				map = updateMap;
+			if (d.getMethod() == ResourceBulkData.Method.PUT || d.getMethod() == ResourceBulkData.Method.POST
+					|| d.getMethod() == ResourceBulkData.Method.CREATE)
+				map = deleteMap;
+			if (map == null)
+				return;
+			HrEntity e = d.getEntity();
+
+			List<HrEntity> occurs = map.get(e.getNudoss());
 			if (occurs == null) {
 				occurs = new ArrayList<HrEntity>();
-				map.put(d.getNudoss(), occurs);
+				map.put(e.getNudoss(), occurs);
 			}
-			occurs.add(d);
+			occurs.add(e);
+			informations.add(e.getMainInformation());
 		});
 
-		List<Integer> keys = new ArrayList<Integer>(map.keySet());
+		List<Integer> keys = new ArrayList<Integer>(updateMap.keySet());
+		keys.addAll(deleteMap.keySet());
 
 		HRDossierCollection collection;
 		try {
-			collection = this.initDossierCollection(processus, structure, new ArrayList(informations));
+			collection = this.initDossierCollection(processus, structure, new ArrayList<String>(informations));
 		} catch (HRDossierCollectionException e) {
 			// impossible d'initialiser la collection
 			e.printStackTrace();
@@ -176,50 +190,79 @@ public class User {
 
 			// traitement d'un dossier hr
 			HRDossier hrDossier = iterator.next();
-			List<HrEntity> occurs = map.get(hrDossier.getNudoss());
 
-			// traitement des occurrences d'un dossier
-			for (HrEntity o : occurs) {
-				HRDataSect dataSection = hrDossier.getDataSectionByName(o.getMainInformation());
+			List<HrEntity> deletedOccurs = updateMap.get(hrDossier.getNudoss());
 
-				// Recuperation de l'occurrence
-				HROccur hrOccur = null;
-				if (o.getNulign() == -1) { // creation
-					HRKey k = new HRKey(o.getHrEntityKey());
-					try {
-						hrOccur = dataSection.createOccur(k);
-					} catch (HRDossierCollectionException e) {
-						// la creation de l'occurrence est en erreur
-						e.printStackTrace();
-						result.setStatus(CommitStatus.KO);
-						result.addTechnicalError(new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
-						return result;
-					}
-				} else {
-					hrOccur = dataSection.getOccurByNulign(o.getNulign());
-					// l'occurrence n'existe plus
-					if (hrOccur == null) {
-						result.setStatus(CommitStatus.KO);
-						result.addTechnicalError(new TechnicalCommitError(TechnicalError.UNKNOWN_OCCUR,
-								hrDossier.getDossierId().toString()));
-						return result;
-					}
-				}
-				// Modification des valeurs
-				for (Map.Entry<String, Object> entry : o.getHrEntityMap().entrySet()) {
-					try {
-						hrOccur.setValue(entry.getKey(), entry.getValue());
-					} catch (HRDossierCollectionException e) {
-						// erreur lors de la modification de la valeur
-						e.printStackTrace();
-						result.setStatus(CommitStatus.KO);
-						result.addTechnicalError(
-								new TechnicalCommitError(TechnicalError.BAD_DATA_FORMAT, e.getMessage()));
-						return result;
+			if (deletedOccurs != null) {
+				for (HrEntity entity : deletedOccurs) {
+					// Set information - Main Data
+					HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
+
+					// Récupération de l'occurrence
+					HROccur hrOccur = null;
+					if (entity.getNulign() == -1) { // création
+						continue;
+					} else { // modification
+						hrOccur = dataSection.getOccurByNulign(entity.getNulign());
+						try {
+							hrOccur.delete();
+						} catch (HRDossierCollectionException e) {
+							e.printStackTrace();
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(
+									new TechnicalCommitError(TechnicalError.DELETE_ERROR, e.getMessage()));
+							return result;
+						}
 					}
 				}
 			}
-			;
+
+			List<HrEntity> updatedOccurs = updateMap.get(hrDossier.getNudoss());
+
+			// traitement des occurrences d'un dossier
+			if (updatedOccurs != null) {
+				for (HrEntity o : updatedOccurs) {
+					HRDataSect dataSection = hrDossier.getDataSectionByName(o.getMainInformation());
+
+					// Recuperation de l'occurrence
+					HROccur hrOccur = null;
+					if (o.getNulign() == -1) { // creation
+						HRKey k = new HRKey(o.getHrEntityKey());
+						try {
+							hrOccur = dataSection.createOccur(k);
+						} catch (HRDossierCollectionException e) {
+							// la creation de l'occurrence est en erreur
+							e.printStackTrace();
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(
+									new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
+							return result;
+						}
+					} else {
+						hrOccur = dataSection.getOccurByNulign(o.getNulign());
+						// l'occurrence n'existe plus
+						if (hrOccur == null) {
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(new TechnicalCommitError(TechnicalError.UNKNOWN_OCCUR,
+									hrDossier.getDossierId().toString()));
+							return result;
+						}
+					}
+					// Modification des valeurs
+					for (Map.Entry<String, Object> entry : o.getHrEntityMap().entrySet()) {
+						try {
+							hrOccur.setValue(entry.getKey(), entry.getValue());
+						} catch (HRDossierCollectionException e) {
+							// erreur lors de la modification de la valeur
+							e.printStackTrace();
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(
+									new TechnicalCommitError(TechnicalError.BAD_DATA_FORMAT, e.getMessage()));
+							return result;
+						}
+					}
+				}
+			}
 		}
 
 		CommitResult r;
