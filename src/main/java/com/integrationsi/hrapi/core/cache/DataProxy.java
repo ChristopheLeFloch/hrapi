@@ -5,7 +5,7 @@ import java.util.List;
 
 
 
-public abstract class DataProxy<T extends Key> {
+public abstract class DataProxy<T extends Cacheable> {
 	
 	boolean useCache = false;
 	

@@ -1,6 +1,6 @@
 package com.integrationsi.hrapi.core.cache;
 
-public interface Key {
+public interface Cacheable {
 	String getKey();
 	
 

@@ -7,8 +7,32 @@ public class HrOccur implements HrEntity{
 	private int nudoss;
 	private String information;
 	private Map<String, Object> values;
+	public Map<String, Object> getValues() {
+		return values;
+	}
+
+	public void setValues(Map<String, Object> values) {
+		this.values = values;
+	}
+
 	private Object[] keys;
+	public Object[] getKeys() {
+		return keys;
+	}
+
+	public void setKeys(Object[] keys) {
+		this.keys = keys;
+	}
+
 	private int nulign;
+	
+	
+	public HrOccur(String information, int nudoss, Integer nulign) {
+		this.information = information;
+		this.nudoss = nudoss;
+		this.nulign = nulign;
+	}
+	
 	@Override
 	public int getNulign() {
 		return nulign;

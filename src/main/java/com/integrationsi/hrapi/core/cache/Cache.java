@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @param <T>
  */
-public class Cache <T extends Key> {
+public class Cache <T extends Cacheable> {
 	
 	public  final HashMap<String,T> cache = new HashMap<String,T>();
 	
