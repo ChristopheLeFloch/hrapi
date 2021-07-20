@@ -12,21 +12,18 @@ import java.util.Map;
  * @author xohd685
  *
  */
-public  interface HrEntity  {
+public  interface IHrEntity  {
 	
 	
 
 	int getNudoss();		
-
-	 int getNulign();
 
 
 	String getMainStructure();	
 	String getMainInformation();
 	
 	Map<String, Object> getHrEntityMap();
-	
-	Object[] getHrEntityKey();
+
 
 
 }

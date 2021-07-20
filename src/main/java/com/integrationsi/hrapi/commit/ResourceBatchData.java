@@ -1,17 +1,23 @@
 package com.integrationsi.hrapi.commit;
 
-import com.integrationsi.hrapi.hrentity.HrEntity;
+import com.integrationsi.hrapi.hrentity.IHrEntity;
 
 public class ResourceBatchData {
 
+	public ResourceBatchData(Method method, IHrEntity entity) {
+		super();
+		this.method = method;
+		this.entity = entity;
+	}
+
 	private Method method;
-	private HrEntity entity;
+	private IHrEntity entity;
 	
 	
-	public HrEntity getEntity() {
+	public IHrEntity getEntity() {
 		return entity;
 	}
-	public void setEntity(HrEntity entity) {
+	public void setEntity(IHrEntity entity) {
 		this.entity = entity;
 	}
 	public Method getMethod() {

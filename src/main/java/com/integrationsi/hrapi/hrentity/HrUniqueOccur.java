@@ -2,7 +2,7 @@ package com.integrationsi.hrapi.hrentity;
 
 import java.util.Map;
 
-public class HrOccur implements HrEntity{
+public class HrUniqueOccur implements IHrEntity{
 
 	private int nudoss;
 	private String information;
@@ -14,30 +14,13 @@ public class HrOccur implements HrEntity{
 	public void setValues(Map<String, Object> values) {
 		this.values = values;
 	}
-
-	private Object[] keys;
-	public Object[] getKeys() {
-		return keys;
-	}
-
-	public void setKeys(Object[] keys) {
-		this.keys = keys;
-	}
-
-	private int nulign;
 	
 	
-	public HrOccur(String information, int nudoss, Integer nulign) {
+	public HrUniqueOccur(String information, int nudoss) {
 		this.information = information;
 		this.nudoss = nudoss;
-		this.nulign = nulign;
 	}
 	
-	@Override
-	public int getNulign() {
-		return nulign;
-	}
-
 	
 	@Override
 	public int getNudoss() {
@@ -59,9 +42,5 @@ public class HrOccur implements HrEntity{
 		return values;
 	}
 
-	@Override
-	public Object[] getHrEntityKey() {
-		return keys;
-	}
 
 }
