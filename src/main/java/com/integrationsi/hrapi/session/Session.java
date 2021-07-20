@@ -1,19 +1,14 @@
 package com.integrationsi.hrapi.session;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+
 import com.hraccess.openhr.HRSessionFactory;
 import com.hraccess.openhr.IHRSession;
-import com.hraccess.openhr.IHRUser;
 import com.hraccess.openhr.exception.AuthenticationException;
 import com.hraccess.openhr.exception.SessionBuildException;
 import com.hraccess.openhr.exception.SessionConnectionException;
 import com.hraccess.openhr.exception.UserConnectionException;
-import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
-import com.integrationsi.hrapi.hrentity.HrOccur;
-
-import java.util.List;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 
 
 public final class Session {
@@ -22,7 +17,7 @@ public final class Session {
 
 
   private IHRSession session;
-  private IHRUser user;
+
 
     // L'utilisation du mot clé volatile
     // permet d'éviter le cas où "Singleton.instance" est 	non nul,

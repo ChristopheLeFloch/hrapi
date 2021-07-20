@@ -2,7 +2,7 @@ package com.integrationsi.hrapi.commit;
 
 import com.integrationsi.hrapi.hrentity.HrEntity;
 
-public class ResourceBulkData {
+public class ResourceBatchData {
 
 	private Method method;
 	private HrEntity entity;

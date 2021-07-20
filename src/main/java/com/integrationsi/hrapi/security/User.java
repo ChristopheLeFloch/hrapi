@@ -27,11 +27,10 @@ import com.hraccess.openhr.dossier.IHRKey;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
 import com.integrationsi.hrapi.commit.CommitStatus;
 import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
-import com.integrationsi.hrapi.commit.ResourceBulkData;
+import com.integrationsi.hrapi.commit.ResourceBatchData;
 import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.hrentity.HrEntity;
-import com.integrationsi.hrapi.hrentity.HrOccur;
 import com.integrationsi.hrapi.util.SqlUtils;
 
 /**
@@ -120,11 +119,11 @@ public class User {
 	 * @param bulkData
 	 * @return
 	 */
-	public HrUpdateCommitResult bulkUpdate(String processus, List<ResourceBulkData> bulkDatas) {
+	public HrUpdateCommitResult batchUpdate(String processus, List<ResourceBatchData> batchkDatas) {
 
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 
-		if (bulkDatas.size() == 0)
+		if (batchkDatas.size() == 0)
 			return result;
 
 		// liste des cles a traiter
@@ -134,17 +133,17 @@ public class User {
 		// liste des informations à traiter
 		HashSet<String> informations = new HashSet<String>();
 		// structure à traiter
-		String structure = bulkDatas.get(0).getEntity().getMainStructure();
+		String structure = batchkDatas.get(0).getEntity().getMainStructure();
 
 		// construction de la liste des dossiers à traiter
 		// et de la liste des informations à traiter
-		bulkDatas.forEach((d) -> {
+		batchkDatas.forEach((d) -> {
 			Map<Integer, List<HrEntity>> map = null;
-			if (d.getMethod() == ResourceBulkData.Method.PUT || d.getMethod() == ResourceBulkData.Method.POST
-					|| d.getMethod() == ResourceBulkData.Method.CREATE)
+			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST
+					|| d.getMethod() == ResourceBatchData.Method.CREATE)
 				map = updateMap;
-			if (d.getMethod() == ResourceBulkData.Method.PUT || d.getMethod() == ResourceBulkData.Method.POST
-					|| d.getMethod() == ResourceBulkData.Method.CREATE)
+			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST
+					|| d.getMethod() == ResourceBatchData.Method.CREATE)
 				map = deleteMap;
 			if (map == null)
 				return;

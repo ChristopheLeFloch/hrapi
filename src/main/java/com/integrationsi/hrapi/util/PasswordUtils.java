@@ -1,10 +1,6 @@
 package com.integrationsi.hrapi.util;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.KeySpec;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
