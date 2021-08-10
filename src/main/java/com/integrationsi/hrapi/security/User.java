@@ -123,7 +123,7 @@ public class User {
 	 * @param bulkData
 	 * @return
 	 */
-	public HrUpdateCommitResult batchUpdate(String processus, List<ResourceBatchData> batchkDatas) {
+	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> batchkDatas) {
 
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 
