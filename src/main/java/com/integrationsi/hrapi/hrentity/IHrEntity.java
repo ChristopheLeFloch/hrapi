@@ -6,10 +6,9 @@ import java.util.Map;
 
 
 /**
- * Cette classe abstraite modélise une entité Hr manipulée en tant que table.
- * L'entité est principalement liée à une information Hr mais peut contenir d'autres informations secondaires.
- * L'information principale peut-être mise à jour mais pas les autres informations secondaires.
- * @author xohd685
+ * Cette classe abstraite modelise une entitee Hr manipulee en tant que table.
+ * L'entite est liee a�une information Hr principale mais peut contenir d'autres informations secondaires.
+ * L'information principale peut-etre mise a� jour mais pas les autres informations secondaires.
  *
  */
 public  interface IHrEntity  {
