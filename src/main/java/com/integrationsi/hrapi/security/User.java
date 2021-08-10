@@ -25,6 +25,7 @@ import com.hraccess.openhr.dossier.HRKey;
 import com.hraccess.openhr.dossier.HROccur;
 import com.hraccess.openhr.dossier.IHRKey;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
+import com.integrationsi.hrapi.application.ApplicationAccess;
 import com.integrationsi.hrapi.commit.CommitStatus;
 import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
 import com.integrationsi.hrapi.commit.ResourceBatchData;
@@ -43,10 +44,11 @@ import com.integrationsi.hrapi.util.SqlUtils;
  */
 public class User {
 
+	private IHRUser hrUser;
 	private String code;
 	private String label;
 	private String matcle;
-	private IHRConversation conversation;
+    private List<ApplicationAccess> applicationAccess;
 	private List<IHRRole> hrRoles;
 	private IHRRole hrRole;
 
@@ -62,14 +64,17 @@ public class User {
 	private Role role;
 
 	protected User(IHRUser hrUser) {
+		this.hrUser = hrUser;
 		this.code = hrUser.getUserId();
 		this.label = hrUser.getLabel();
+		
 		roles = new ArrayList<Role>();
-		hrUser.getRoles().forEach((HRRole) -> {
+		this.hrRoles = hrUser.getRoles();
+		this.hrRoles.forEach((HRRole) -> {
 			Role r = new Role(HRRole);
 			roles.add(r);
 		});
-		this.conversation = hrUser.getMainConversation();
+		
 	}
 
 	public String getCode() {
@@ -555,14 +560,24 @@ public class User {
 
 		// Instantiating a new dossier collection with given role, conversation and
 		// configuration
-		return new HRDossierCollection(dossierCollectionParameters, this.conversation, hrRole,
+		return new HRDossierCollection(dossierCollectionParameters, this.hrUser.getMainConversation(), hrRole,
 				new HRDossierFactory(HRDossierFactory.TYPE_DOSSIER));
 
 	}
+	
+
+	public List<ApplicationAccess> getApplicationAccess() {
+		return applicationAccess;
+	}
+
+
+	public void setApplicationAccess(List<ApplicationAccess> applicationAccess) {
+		this.applicationAccess = applicationAccess;
+	}
+
 
 	public boolean isConnected() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.hrUser.isConnected();
 	}
 
 }

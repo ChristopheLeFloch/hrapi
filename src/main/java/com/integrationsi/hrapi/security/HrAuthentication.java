@@ -77,6 +77,10 @@ public class HrAuthentication  {
 	}
 
 
+	public boolean isConnected() {
+		return this.hrUser.isConnected();
+	}
+	
     public boolean isAuthenticated() {
         return this.authenticated;
     }
@@ -136,6 +140,8 @@ public class HrAuthentication  {
 										hrRole,
 										new HRDossierFactory(HRDossierFactory.TYPE_DOSSIER));
     }
+
+
 
 
 
