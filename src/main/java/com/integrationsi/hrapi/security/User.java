@@ -331,6 +331,216 @@ public class User {
 		return result;
 	}
 
+	public HrUpdateCommitResult batchUpdate(String processus, 
+			List<? extends ResourceBatchData> batchkDatas,
+			int nudoss) {
+		HrUpdateCommitResult result = new HrUpdateCommitResult();
+
+		if (batchkDatas.size() == 0)
+			return result;
+
+		// liste des cles a traiter
+		Map<Integer, List<IHrEntity>> updateMap = new HashMap<Integer, List<IHrEntity>>();
+		Map<Integer, List<IHrEntity>> deleteMap = new HashMap<Integer, List<IHrEntity>>();
+
+		// liste des informations à traiter
+		HashSet<String> informations = new HashSet<String>();
+		// structure à traiter
+		String structure = batchkDatas.get(0).getEntity().getMainStructure();
+
+		// construction de la liste des dossiers à traiter
+		// et de la liste des informations à traiter
+		batchkDatas.forEach((d) -> {
+			Map<Integer, List<IHrEntity>> map = null;
+			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST
+					|| d.getMethod() == ResourceBatchData.Method.CREATE)
+				map = updateMap;
+			if (d.getMethod() == ResourceBatchData.Method.DELETE)
+				map = deleteMap;
+			if (map == null)
+				return;
+			IHrEntity e = d.getEntity();
+
+			List<IHrEntity> occurs = map.get(nudoss);
+			if (occurs == null) {
+				occurs = new ArrayList<IHrEntity>();
+				map.put(nudoss, occurs);
+			}
+			occurs.add(e);
+			informations.add(e.getMainInformation());
+		});
+
+		List<Integer> keys = new ArrayList<Integer>(updateMap.keySet());
+		keys.addAll(deleteMap.keySet());
+
+		HRDossierCollection collection;
+		try {
+			collection = this.initDossierCollection(processus, structure, new ArrayList<String>(informations));
+		} catch (HRDossierCollectionException e) {
+			// impossible d'initialiser la collection
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.INIT_COLLECTION, e.getMessage()));
+			return result;
+		}
+
+		String select = "select nudoss from ZY00 where nudoss = " + nudoss;
+		HRDossierListIterator iterator;
+		try {
+			iterator = collection.loadDossiers(select);
+		} catch (HRDossierCollectionException e) {
+			e.printStackTrace();
+			// impossible d'initialiser la collection
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.LOAD_COLLECTION, e.getMessage()));
+			return result;
+		}
+
+		while (iterator.hasNext()) {
+
+			// traitement d'un dossier hr
+			HRDossier hrDossier = iterator.next();
+
+			List<IHrEntity> deletedOccurs = deleteMap.get(hrDossier.getNudoss());
+
+			if (deletedOccurs != null) {
+				for (IHrEntity entity : deletedOccurs) {
+					// Set information - Main Data
+					HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
+
+					boolean isMultiple = dataSection.isMultiple();
+
+					HROccur hrOccur = null;
+					if (isMultiple) {
+						IHrMultipleEntity om = (IHrMultipleEntity) entity;
+						// Récupération de l'occurrence
+						if (om.getNulign() == -1) { // création
+							continue;
+						} else { // modification
+							hrOccur = dataSection.getOccurByNulign(om.getNulign());
+							try {
+								hrOccur.delete();
+							} catch (HRDossierCollectionException e) {
+								e.printStackTrace();
+								result.setStatus(CommitStatus.KO);
+								result.addTechnicalError(
+										new TechnicalCommitError(TechnicalError.DELETE_ERROR, e.getMessage()));
+								return result;
+							}
+						}
+					} else {
+						hrOccur = dataSection.getOccur();
+						try {
+							hrOccur.delete();
+						} catch (HRDossierCollectionException e) {
+							e.printStackTrace();
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(
+									new TechnicalCommitError(TechnicalError.DELETE_ERROR, e.getMessage()));
+							return result;
+						}
+					}
+				}
+			}
+
+			List<IHrEntity> updatedOccurs = updateMap.get(hrDossier.getNudoss());
+
+			// traitement des occurrences d'un dossier
+			if (updatedOccurs != null) {
+				for (IHrEntity o : updatedOccurs) {
+					HRDataSect dataSection = hrDossier.getDataSectionByName(o.getMainInformation());
+					boolean isMultiple = dataSection.isMultiple();
+
+					// Recuperation de l'occurrence
+					HROccur hrOccur = null;
+
+					if (isMultiple) {
+						IHrMultipleEntity om = (IHrMultipleEntity) o;
+						if (om.getNulign() == -1) { // creation
+							HRKey k = new HRKey(om.getHrEntityKey());
+							try {
+								hrOccur = dataSection.createOccur(k);
+							} catch (HRDossierCollectionException e) {
+								// la creation de l'occurrence est en erreur
+								e.printStackTrace();
+								result.setStatus(CommitStatus.KO);
+								result.addTechnicalError(
+										new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
+								return result;
+							}
+						} else {
+							hrOccur = dataSection.getOccurByNulign(om.getNulign());
+							// l'occurrence n'existe plus
+							if (hrOccur == null) {
+								result.setStatus(CommitStatus.KO);
+								result.addTechnicalError(new TechnicalCommitError(TechnicalError.UNKNOWN_OCCUR,
+										hrDossier.getDossierId().toString()));
+								return result;
+							}
+						}
+					} else {
+						hrOccur = dataSection.getOccur();
+						if (hrOccur == null)
+							try {
+								hrOccur = dataSection.createOccur();
+							} catch (HRDossierCollectionException e) {
+								// la creation de l'occurrence est en erreur
+								e.printStackTrace();
+								result.setStatus(CommitStatus.KO);
+								result.addTechnicalError(
+										new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
+								return result;
+							}
+					}
+
+					// Modification des valeurs
+					for (Map.Entry<String, Object> entry : o.getHrEntityMap().entrySet()) {
+						try {
+							hrOccur.setValue(entry.getKey(), entry.getValue());
+						} catch (HRDossierCollectionException e) {
+							// erreur lors de la modification de la valeur
+							e.printStackTrace();
+							result.setStatus(CommitStatus.KO);
+							result.addTechnicalError(
+									new TechnicalCommitError(TechnicalError.BAD_DATA_FORMAT, e.getMessage()));
+							return result;
+						}
+					}
+				}
+			}
+		}
+
+		CommitResult r;
+		try {
+			r = collection.commitAllDossiers().getDossierCommitResult();
+		} catch (HRDossierCollectionCommitException e) {
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.COMMIT_COLLECTION, e.getMessage()));
+			return result;
+		}
+
+		Error[] errors = r.getErrors();
+		if (errors.length == 0) {
+			result.setStatus(CommitStatus.OK);
+			return result;
+		}
+
+		result.setStatus(CommitStatus.HR_ERRORS);
+		for (com.hraccess.openhr.msg.HRResultUserError.Error error : r.getErrors()) {
+			if (error.weight == 5) {
+				IHRKey key = r.getErrorDossierId(error).getDossierKey();
+				HRDossier d = collection.getDossier(key);
+				result.addBusinessError(d, error);
+			}
+		}
+
+		return result;
+		
+	}
+	
+	
 	/**
 	 * Mise à jour d'une information multiple Hr Access. La mise à jour est réalisée
 	 * avec le processus passé en paramètre.

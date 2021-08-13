@@ -5,6 +5,8 @@ import com.integrationsi.hrapi.hrentity.IHrEntity;
 
 public class ResourceBatchData <T extends IHrEntity> {
 
+	public ResourceBatchData() {}
+	
 	public ResourceBatchData(Method method, T entity) {
 		super();
 		this.method = method;
