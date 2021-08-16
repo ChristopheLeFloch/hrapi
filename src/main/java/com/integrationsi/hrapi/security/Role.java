@@ -9,6 +9,7 @@ public class Role {
 	private String label;
 	private Category category;
 	private String matcle;
+	private String employeeName;
 	
 	public String getMatcle() {
 		return matcle;
@@ -74,6 +75,16 @@ public class Role {
 
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+
+
+	public String getEmployeeName() {
+		return employeeName;
+	}
+
+
+	public void setEmployeeName(String employeeName) {
+		this.employeeName = employeeName;
 	}
 
 
