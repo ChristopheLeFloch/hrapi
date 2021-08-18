@@ -105,12 +105,30 @@ public class User {
 		return role;
 	}
 
-	public void setRole(Role role) {
+	public void setRole(Role role) throws NoRoleException {
 		this.role = role;
 		Optional<IHRRole> optionRole = this.hrRoles.stream()
-				.filter(hr -> hr.getTemplate() == role.getCode() && hr.getParameter() == role.getValue()).findFirst();
+				.filter(hr -> hr.getTemplate()
+									.equals(role.getCode()) && hr.getParameter()
+									.equalsIgnoreCase(role.getValue())).findFirst();
 		if (optionRole.isPresent())
 			this.hrRole = optionRole.get();
+		else throw new NoRoleException();
+	}
+	
+	public void setRole(String code, String value) throws NoRoleException {
+		Optional<Role> roleOption = this.roles.stream()
+				.filter(r -> code.equalsIgnoreCase(r.getCode()) 
+						&& value.equalsIgnoreCase(r.getValue())).findFirst();
+		if (roleOption.isPresent())
+			this.role = roleOption.get();
+		else throw new NoRoleException();
+		Optional<IHRRole> hrRoleOption = this.hrRoles.stream()
+				.filter(hr -> hr.getTemplate().equalsIgnoreCase(role.getCode())
+							&& hr.getParameter().equalsIgnoreCase(role.getValue())).findFirst();
+		if (hrRoleOption.isPresent())
+			this.hrRole = hrRoleOption.get();
+		else throw new NoRoleException();
 	}
 
 	/**

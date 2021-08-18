@@ -12,8 +12,8 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class SessionManager {
 
-    public SessionManager(PropertiesConfiguration propertiesConfiguration) throws AuthenticationException, SessionBuildException, SessionConnectionException, ConfigurationException, UserConnectionException, IllegalStateException {
-    	Session.getInstance().initSession(propertiesConfiguration);
+    public SessionManager(String path) throws AuthenticationException, SessionBuildException, SessionConnectionException, ConfigurationException, UserConnectionException, IllegalStateException {
+    	Session.getInstance().initSession(new PropertiesConfiguration(path));
 	}
 
 	public static IHRSession getSession() {

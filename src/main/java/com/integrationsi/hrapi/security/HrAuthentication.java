@@ -94,7 +94,7 @@ public class HrAuthentication  {
 		return this.user.getRole();
 	}
 
-	public void setRole(Role role) {
+	public void setRole(Role role) throws NoRoleException {
 		this.user.setRole(role);
 	}
 
@@ -128,8 +128,7 @@ public class HrAuthentication  {
     		  if (role.getParameter() == this.user.getRole().getValue() 
     			&& role.getTemplate() == this.user.getRole().getCode()) {
     			  hrRole = role;
-    		  }
-    
+    		  }    
     	  }
 
     		 
