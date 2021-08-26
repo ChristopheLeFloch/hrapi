@@ -99,13 +99,15 @@ public class HrAuthentication  {
 	}
 
 
-	public static void disconnectUser(String vsid) throws SessionException {
+	public void disconnectUser(String vsid) throws SessionException {
 		SessionManager.disconnectUser(vsid);
 		
 	}
 	
  
-    public  String getDressingCode(String cdstdo, String activity) {
+    public  String getDressingCode(String cdstdo, String activity) throws NoRoleException {
+    	Role role = this.user.getRole();
+    	if (role == null) throw new NoRoleException();
 		  HRMsgDressSqlStatement request = new HRMsgDressSqlStatement();
 	        request.addStatement(cdstdo, "select za.NUDOSS from " + cdstdo + "00 za"); // Data extraction order
 	        request.setRoleTemplate(this.user.getRole().getCode());

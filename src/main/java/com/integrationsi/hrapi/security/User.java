@@ -24,6 +24,7 @@ import com.hraccess.openhr.dossier.HRDossierListIterator;
 import com.hraccess.openhr.dossier.HRKey;
 import com.hraccess.openhr.dossier.HROccur;
 import com.hraccess.openhr.dossier.IHRKey;
+import com.hraccess.openhr.exception.UserConnectionException;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
 import com.integrationsi.hrapi.application.ApplicationAccess;
 import com.integrationsi.hrapi.commit.CommitStatus;
@@ -131,6 +132,10 @@ public class User {
 		else throw new NoRoleException();
 	}
 
+	
+	public void logout() throws UserConnectionException, IllegalStateException {
+		this.hrUser.disconnect();
+	}
 	/**
 	 * Mise à jour en masse de données Hr Access. La mise à jour est réalisée avec
 	 * le processus passé en paramètre. Les données peuvent appartenir à des
