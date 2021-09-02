@@ -7,6 +7,8 @@ import com.hraccess.openhr.exception.SessionBuildException;
 import com.hraccess.openhr.exception.SessionConnectionException;
 import com.hraccess.openhr.exception.UserConnectionException;
 
+import java.util.Map;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -14,6 +16,12 @@ public class SessionManager {
 
     public SessionManager(String path) throws AuthenticationException, SessionBuildException, SessionConnectionException, ConfigurationException, UserConnectionException, IllegalStateException {
     	Session.getInstance().initSession(new PropertiesConfiguration(path));
+	}
+    
+    public SessionManager(Map<String, Object> propertiesMap) throws AuthenticationException, SessionBuildException, SessionConnectionException, ConfigurationException, UserConnectionException, IllegalStateException {
+    	PropertiesConfiguration conf = new PropertiesConfiguration();    	
+    	propertiesMap.forEach((v, k) -> conf.addProperty(v, k));    	
+    	Session.getInstance().initSession(conf);
 	}
 
 	public static IHRSession getSession() {
