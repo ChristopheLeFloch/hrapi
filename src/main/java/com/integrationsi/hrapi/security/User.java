@@ -32,6 +32,8 @@ import com.integrationsi.hrapi.commit.HrUpdateCommitResult;
 import com.integrationsi.hrapi.commit.ResourceBatchData;
 import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
+import com.integrationsi.hrapi.commit.ResourceBatchData.Method;
+import com.integrationsi.hrapi.hrentity.HrEntity;
 import com.integrationsi.hrapi.hrentity.IHrEntity;
 import com.integrationsi.hrapi.hrentity.IHrMultipleEntity;
 import com.integrationsi.hrapi.util.SqlUtils;
@@ -353,8 +355,7 @@ public class User {
 		// et de la liste des informations à traiter
 		batchkDatas.forEach((d) -> {
 			Map<Integer, List<IHrEntity>> map = null;
-			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST
-					|| d.getMethod() == ResourceBatchData.Method.CREATE)
+			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST)
 				map = updateMap;
 			if (d.getMethod() == ResourceBatchData.Method.DELETE)
 				map = deleteMap;
@@ -542,6 +543,25 @@ public class User {
 	}
 
 
+	public HrUpdateCommitResult update(String processus,  IHrEntity data) {		
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.PUT, data));
+		 return this.batchUpdate(processus, list);		
+	}
+
+	public HrUpdateCommitResult create(String processus,  IHrEntity data, int nudoss) {	
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.PUT, data));
+		 return this.batchUpdate(processus, list, nudoss);		
+	}
+	
+	public void delete(String processus, IHrEntity data) {
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.DELETE, data));
+		this.batchUpdate(processus, list);	
+		
+	}
+
 	private HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations)
 			throws HRDossierCollectionException {
 
@@ -573,5 +593,6 @@ public class User {
 	public boolean isConnected() {
 		return this.hrUser.isConnected();
 	}
+
 
 }

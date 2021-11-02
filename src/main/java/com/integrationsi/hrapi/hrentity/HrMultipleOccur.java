@@ -24,15 +24,11 @@ public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 		return nulign;
 	}
 	
-	
 	public HrMultipleOccur(String information, int nudoss, Integer nulign) {
 		super(information, nudoss);
 		this.nulign = nulign;
 	}
 	
-
-	
-
 
 
 }

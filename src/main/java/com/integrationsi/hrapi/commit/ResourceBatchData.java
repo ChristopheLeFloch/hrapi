@@ -33,8 +33,7 @@ public class ResourceBatchData <T extends IHrEntity> {
 	public enum Method {
 		POST("POST"),
 		DELETE("DELETE"),
-		PUT("PUT"),
-		CREATE("CREATE");
+		PUT("PUT");
 		
 		String label;
 		
