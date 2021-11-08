@@ -2,23 +2,18 @@ package com.integrationsi.hrapi.hrentity;
 
 public abstract class HrMultipleEntity  extends HrEntity implements IHrMultipleEntity {
 	
-	
+	protected Integer id;
 
-	@Override
-	public int getNudoss() {
-		String id = getId();
-		if (id == null) return -1;		
-		return Integer.parseInt(id.split("_")[0]);
-	}
-	
-	@Override
-	public int getNulign() {
-		String id = getId();
-		if (id == null) return -1;		
-		return Integer.parseInt(id.split("_")[1]);
+	public Integer getId() {
+		return id;
 	}
 
-
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	
+	
+	
 
 
 }

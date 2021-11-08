@@ -4,8 +4,7 @@ import java.util.Map;
 
 public class HrUniqueOccur implements IHrEntity{
 
-	
-	private int nudoss;
+
 	private String information;
 	private Map<String, Object> values;
 	public Map<String, Object> getValues() {
@@ -17,16 +16,11 @@ public class HrUniqueOccur implements IHrEntity{
 	}
 	
 	
-	public HrUniqueOccur(String information, int nudoss) {
+	public HrUniqueOccur(String information) {
 		this.information = information;
-		this.nudoss = nudoss;
+
 	}
 	
-	
-	@Override
-	public int getNudoss() {
-		return nudoss;
-	}
 
 	@Override
 	public String getMainStructure() {

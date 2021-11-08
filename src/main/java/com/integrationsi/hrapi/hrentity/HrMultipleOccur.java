@@ -3,6 +3,7 @@ package com.integrationsi.hrapi.hrentity;
 public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 
 
+	private Integer id;
 
 	private Object[] keys;
 	public Object[] getKeys() {
@@ -13,20 +14,26 @@ public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 		this.keys = keys;
 	}
 
+	
+	public HrMultipleOccur(String information,  Integer nulign) {
+		super(information);
+		this.id = nulign;
+	}
+
+	@Override
+	public Integer getId() {
+		return id;
+	}
+
+	@Override
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	
 	@Override
 	public Object[] getHrEntityKey() {
-		return keys;
-	}
-	
-	private int nulign;
-	@Override
-	public int getNulign() {
-		return nulign;
-	}
-	
-	public HrMultipleOccur(String information, int nudoss, Integer nulign) {
-		super(information, nudoss);
-		this.nulign = nulign;
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

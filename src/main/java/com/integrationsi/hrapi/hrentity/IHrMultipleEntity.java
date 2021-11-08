@@ -8,8 +8,8 @@ package com.integrationsi.hrapi.hrentity;
  */
 public  interface IHrMultipleEntity extends IHrEntity {
 	
-	int getNulign();
-
+	Integer getId();
+	void setId(Integer id); 
 	
 	Object[] getHrEntityKey();
 }

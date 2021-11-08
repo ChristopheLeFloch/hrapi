@@ -13,9 +13,7 @@ import java.util.Map;
  */
 public  interface IHrEntity  {
 	
-	
-
-	int getNudoss();		
+		
 
 
 	String getMainStructure();	

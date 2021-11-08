@@ -140,203 +140,9 @@ public class User {
 	public void logout() throws UserConnectionException, IllegalStateException {
 		this.hrUser.disconnect();
 	}
-	/**
-	 * Mise à jour en masse de données Hr Access. La mise à jour est réalisée avec
-	 * le processus passé en paramètre. Les données peuvent appartenir à des
-	 * dossiers différents et peuvent contenir des informations distinctes. Si une
-	 * erreur survient, l'ensemble des mises à jour est en échec.
-	 * 
-	 * @param processus
-	 * @param bulkData
-	 * @return
-	 */
-	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> batchkDatas) {
-
-		HrUpdateCommitResult result = new HrUpdateCommitResult();
-
-		if (batchkDatas.size() == 0)
-			return result;
-
-	
-		// liste des informations à traiter
-		HashSet<String> informations = new HashSet<String>();
-		batchkDatas.forEach(d -> informations.add(d.getEntity().getMainInformation()));
-		
-		// structure à traiter
-		String structure = batchkDatas.get(0).getEntity().getMainStructure();
-		
-		HRDossierCollection collection;
-		try {
-			collection = this.initDossierCollection(processus, structure, new ArrayList<String>(informations));
-		} catch (HRDossierCollectionException e) {
-			// impossible d'initialiser la collection
-			e.printStackTrace();
-			result.setStatus(CommitStatus.KO);
-			result.addTechnicalError(new TechnicalCommitError(TechnicalError.INIT_COLLECTION, e.getMessage()));
-			return result;
-		}
-		
-
-		// liste des cles nudoss ( presente lors des mises a jour ou des suppressions )
-		HashSet<Integer> keys = new HashSet<Integer>();
-		batchkDatas.forEach(d -> keys.add(d.getEntity().getNudoss()));
-		
-		// liste des cles fonctionnelles (lors de la creation)
-		List <Object[]> functionnalKeys = new ArrayList<Object[]>();
-
-		HRDossierListIterator iterator;
-		try {
-			
-			String select = "select nudoss from " + structure + "00 where nudoss in " + SqlUtils.getSqlNudossList(new ArrayList<Integer>(keys));
-			iterator = collection.loadDossiers(select);
-		} catch (HRDossierCollectionException e) {
-			e.printStackTrace();
-			// impossible d'initialiser la collection
-			e.printStackTrace();
-			result.setStatus(CommitStatus.KO);
-			result.addTechnicalError(new TechnicalCommitError(TechnicalError.LOAD_COLLECTION, e.getMessage()));
-			return result;
-		}
-
-		while (iterator.hasNext()) {
-
-			// traitement d'un dossier hr
-			HRDossier hrDossier = iterator.next();
-
-			batchkDatas.stream()
-						.filter( d -> d.getEntity().getNudoss() == hrDossier.getNudoss())
-						.forEach( d -> 	{
-							IHrEntity entity = d.getEntity();
-							// Set information - Main Data
-							HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
-
-							boolean isMultiple = dataSection.isMultiple();
-
-							HROccur hrOccur = null;
-							
-							// suppression d'une information multiple
-							if (isMultiple && d.getMethod() == ResourceBatchData.Method.DELETE ) {
-								IHrMultipleEntity om = (IHrMultipleEntity) entity;
-								// Récupération de l'occurrence
-								if (om.getNulign() == -1) { // création
-									return;
-								} else { // modification
-									hrOccur = dataSection.getOccurByNulign(om.getNulign());
-									try {
-										hrOccur.delete();
-									} catch (HRDossierCollectionException e) {
-										e.printStackTrace();
-										result.setStatus(CommitStatus.KO);
-										result.addTechnicalError(
-												new TechnicalCommitError(TechnicalError.DELETE_ERROR, e.getMessage()));
-									}
-								}
-							}
-							
-							// suppression d'une information unique
-							if ( ! isMultiple && d.getMethod() == ResourceBatchData.Method.DELETE ){
-								hrOccur = dataSection.getOccur();
-								try {
-									if (hrOccur != null) hrOccur.delete();
-								} catch (HRDossierCollectionException e) {
-									e.printStackTrace();
-									result.setStatus(CommitStatus.KO);
-									result.addTechnicalError(
-											new TechnicalCommitError(TechnicalError.DELETE_ERROR, e.getMessage()));
-								}
-							}
-							
-							// update d'une information multiple
-							if (  isMultiple && d.getMethod() == ResourceBatchData.Method.PUT ){
-								IHrMultipleEntity om = (IHrMultipleEntity) entity;
-								if (om.getNulign() == -1) { // creation
-									HRKey k = new HRKey(om.getHrEntityKey());
-									try {
-										hrOccur = dataSection.createOccur(k);
-									} catch (HRDossierCollectionException e) {
-										// la creation de l'occurrence est en erreur
-										e.printStackTrace();
-										result.setStatus(CommitStatus.KO);
-										result.addTechnicalError(
-												new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
-									}
-								} else {
-									hrOccur = dataSection.getOccurByNulign(om.getNulign());
-									// l'occurrence n'existe plus
-									if (hrOccur == null) {
-										result.setStatus(CommitStatus.KO);
-										result.addTechnicalError(new TechnicalCommitError(TechnicalError.UNKNOWN_OCCUR,
-												hrDossier.getDossierId().toString()));
-									}
-								}
-							}
-							
-							if ( !isMultiple && d.getMethod() == ResourceBatchData.Method.PUT ){
-								IHrEntity om = (IHrEntity) entity;
-										try {
-											hrOccur = dataSection.getOccur();											
-											if (hrOccur == null ) hrOccur = dataSection.createOccur();
-										} catch (HRDossierCollectionException e) {
-											// la creation de l'occurrence est en erreur
-											e.printStackTrace();
-											result.setStatus(CommitStatus.KO);
-											result.addTechnicalError(
-													new TechnicalCommitError(TechnicalError.CREATE_OCCUR, e.getMessage()));
-										}								
-							}
-							
-							// mise a jour des valeurs
-							if (d.getMethod() == ResourceBatchData.Method.PUT) {
-								// Modification des valeurs
-								for (Map.Entry<String, Object> entry : entity.getHrEntityMap().entrySet()) {
-									try {
-										hrOccur.setValue(entry.getKey(), entry.getValue());
-									} catch (HRDossierCollectionException e) {
-										// erreur lors de la modification de la valeur
-										e.printStackTrace();
-										result.setStatus(CommitStatus.KO);
-										result.addTechnicalError(
-												new TechnicalCommitError(TechnicalError.BAD_DATA_FORMAT, e.getMessage()));
-									}
-								}
-							}
-				
-						});
-
-			
-		}
-		if (result.getStatus() == CommitStatus.KO) return result;
-
-		CommitResult r;
-		try {
-			r = collection.commitAllDossiers().getDossierCommitResult();
-		} catch (HRDossierCollectionCommitException e) {
-			e.printStackTrace();
-			result.setStatus(CommitStatus.KO);
-			result.addTechnicalError(new TechnicalCommitError(TechnicalError.COMMIT_COLLECTION, e.getMessage()));
-			return result;
-		}
-
-		Error[] errors = r.getErrors();
-		if (errors.length == 0) {
-			result.setStatus(CommitStatus.OK);
-			return result;
-		}
-
-		result.setStatus(CommitStatus.HR_ERRORS);
-		for (com.hraccess.openhr.msg.HRResultUserError.Error error : r.getErrors()) {
-			if (error.weight == 5) {
-				IHRKey key = r.getErrorDossierId(error).getDossierKey();
-				HRDossier d = collection.getDossier(key);
-				result.addBusinessError(d, error);
-			}
-		}
-
-		return result;
-	}
 
 	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> batchkDatas,
-			int nudoss) {
+			Integer nudoss) {
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 
 		if (batchkDatas.size() == 0)
@@ -417,10 +223,10 @@ public class User {
 					if (isMultiple) {
 						IHrMultipleEntity om = (IHrMultipleEntity) entity;
 						// Récupération de l'occurrence
-						if (om.getNulign() == -1) { // création
+						if (om.getId() == null) { // création
 							continue;
 						} else { // modification
-							hrOccur = dataSection.getOccurByNulign(om.getNulign());
+							hrOccur = dataSection.getOccurByNulign(om.getId());
 							try {
 								hrOccur.delete();
 							} catch (HRDossierCollectionException e) {
@@ -459,7 +265,7 @@ public class User {
 
 					if (isMultiple) {
 						IHrMultipleEntity om = (IHrMultipleEntity) o;
-						if (om.getNulign() == -1) { // creation
+						if (om.getId() == null) { // creation
 							HRKey k = new HRKey(om.getHrEntityKey());
 							try {
 								hrOccur = dataSection.createOccur(k);
@@ -472,7 +278,7 @@ public class User {
 								return result;
 							}
 						} else {
-							hrOccur = dataSection.getOccurByNulign(om.getNulign());
+							hrOccur = dataSection.getOccurByNulign(om.getId());
 							// l'occurrence n'existe plus
 							if (hrOccur == null) {
 								result.setStatus(CommitStatus.KO);
@@ -543,23 +349,42 @@ public class User {
 	}
 
 
-	public HrUpdateCommitResult update(String processus,  IHrEntity data) {		
+	public HrUpdateCommitResult update(String processus,  IHrEntity data, Integer nudoss) {		
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
-		 return this.batchUpdate(processus, list);		
+		 return this.batchUpdate(processus, list, nudoss);		
 	}
 
-	public HrUpdateCommitResult create(String processus,  IHrEntity data, int nudoss) {	
+	public HrUpdateCommitResult create(String processus,  IHrEntity data, Integer nudoss) {	
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		 return this.batchUpdate(processus, list, nudoss);		
 	}
 	
-	public void delete(String processus, IHrEntity data) {
+	public void delete(String processus, IHrEntity data, Integer nudoss) {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.DELETE, data));
-		this.batchUpdate(processus, list);	
-		
+		this.batchUpdate(processus, list, nudoss);		
+	}
+	
+	public HrUpdateCommitResult update(String processus,  IHrMultipleEntity data, Integer nudoss, Integer nulign) {		
+		data.setId(nulign);
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.PUT, data));
+		 return this.batchUpdate(processus, list, nudoss);		
+	}
+
+	public HrUpdateCommitResult create(String processus,  IHrMultipleEntity data, Integer nudoss) {	
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.PUT, data));
+		 return this.batchUpdate(processus, list, nudoss);		
+	}
+	
+	public void delete(String processus, IHrMultipleEntity data, Integer nudoss, Integer nulign) {
+		data.setId(nulign);
+		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		list.add(new ResourceBatchData(Method.DELETE, data));
+		this.batchUpdate(processus, list, nudoss);		
 	}
 
 	private HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations)
