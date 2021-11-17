@@ -1,21 +1,12 @@
 package com.integrationsi.hrapi.hrentity;
 
-public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
+public class HrToDeleteOccur extends HrUniqueOccur implements IHrMultipleEntity{
 
 
 	private Integer id;
 
-	private Object[] keys;
-	public Object[] getKeys() {
-		return keys;
-	}
 
-	public void setKeys(Object[] keys) {
-		this.keys = keys;
-	}
-
-	
-	public HrMultipleOccur(String information,  Integer nulign) {
+	public HrToDeleteOccur(String information,  Integer nulign) {
 		super(information);
 		this.id = nulign;
 	}

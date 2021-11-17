@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import com.hraccess.openhr.IHRConversation;
 import com.hraccess.openhr.IHRRole;
@@ -34,6 +36,9 @@ import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.commit.ResourceBatchData.Method;
 import com.integrationsi.hrapi.hrentity.HrEntity;
+import com.integrationsi.hrapi.hrentity.HrMultipleOccur;
+import com.integrationsi.hrapi.hrentity.HrToDeleteOccur;
+import com.integrationsi.hrapi.hrentity.HrUniqueOccur;
 import com.integrationsi.hrapi.hrentity.IHrEntity;
 import com.integrationsi.hrapi.hrentity.IHrMultipleEntity;
 import com.integrationsi.hrapi.util.SqlUtils;
@@ -141,12 +146,19 @@ public class User {
 		this.hrUser.disconnect();
 	}
 
-	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> batchkDatas,
-			Integer nudoss) {
+	public HrUpdateCommitResult batchUpdate(String processus,  List<? extends ResourceBatchData> list, Integer nudoss) {
+		HashMap<Integer, List<? extends ResourceBatchData>> dataMap = new HashMap<Integer, List<? extends ResourceBatchData>>();
+		dataMap.put(nudoss, list);
+		return this.batchUpdate(processus, dataMap);
+	}
+	
+	
+	private HrUpdateCommitResult batchUpdate(
+					String processus, 
+					Map<Integer, List<? extends ResourceBatchData>> dataMap) {
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 
-		if (batchkDatas.size() == 0)
-			return result;
+		if (dataMap == null) return result;
 
 		// liste des cles a traiter
 		Map<Integer, List<IHrEntity>> updateMap = new HashMap<Integer, List<IHrEntity>>();
@@ -155,31 +167,45 @@ public class User {
 		// liste des informations à traiter
 		HashSet<String> informations = new HashSet<String>();
 		// structure à traiter
-		String structure = batchkDatas.get(0).getEntity().getMainStructure();
+		String structure = null;
 
 		// construction de la liste des dossiers à traiter
 		// et de la liste des informations à traiter
-		batchkDatas.forEach((d) -> {
-			Map<Integer, List<IHrEntity>> map = null;
-			if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST)
-				map = updateMap;
-			if (d.getMethod() == ResourceBatchData.Method.DELETE)
-				map = deleteMap;
-			if (map == null)
-				return;
-			IHrEntity e = d.getEntity();
+		for (Entry<Integer, List<? extends ResourceBatchData>> es: dataMap.entrySet()) {
+			Integer nudoss = es.getKey();
+			List<? extends ResourceBatchData> datas = es.getValue();
+			
+			for ( ResourceBatchData d: datas) {
+				Map<Integer, List<IHrEntity>> map = null;
+				if (d.getMethod() == ResourceBatchData.Method.PUT || d.getMethod() == ResourceBatchData.Method.POST)
+					map = updateMap;
+				if (d.getMethod() == ResourceBatchData.Method.DELETE)
+					map = deleteMap;
+				if (map == null)
+					continue;
+				IHrEntity e = d.getEntity();
+	
+				List<IHrEntity> occurs = map.get(nudoss);
+				if (occurs == null) {
+					occurs = new ArrayList<IHrEntity>();
+					map.put(nudoss, occurs);
+				}
+				occurs.add(e);
+	
+					
+				//TODO contrôler qu'il n'y a qu'une seule structure dans le flot
+				structure = e.getMainStructure();				
+				informations.add(e.getMainInformation());				
+				
+			};
+		};
 
-			List<IHrEntity> occurs = map.get(nudoss);
-			if (occurs == null) {
-				occurs = new ArrayList<IHrEntity>();
-				map.put(nudoss, occurs);
-			}
-			occurs.add(e);
-			informations.add(e.getMainInformation());
-		});
-
-		List<Integer> keys = new ArrayList<Integer>(updateMap.keySet());
+		Set<Integer> keys = new HashSet<Integer>();
+		keys.addAll(updateMap.keySet());
 		keys.addAll(deleteMap.keySet());
+
+
+			
 
 		HRDossierCollection collection;
 		try {
@@ -192,6 +218,7 @@ public class User {
 			return result;
 		}
 
+		for (Integer nudoss: keys) {
 		String select = "select nudoss from " + structure + "00 where nudoss = " + nudoss;
 		HRDossierListIterator iterator;
 		try {
@@ -318,6 +345,7 @@ public class User {
 				}
 			}
 		}
+		}
 
 		CommitResult r;
 		try {
@@ -355,6 +383,8 @@ public class User {
 		 return this.batchUpdate(processus, list, nudoss);		
 	}
 
+
+
 	public HrUpdateCommitResult create(String processus,  IHrEntity data, Integer nudoss) {	
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
@@ -380,10 +410,11 @@ public class User {
 		 return this.batchUpdate(processus, list, nudoss);		
 	}
 	
-	public void delete(String processus, IHrMultipleEntity data, Integer nudoss, Integer nulign) {
-		data.setId(nulign);
+	public void delete(String processus, String info, Integer nudoss, Integer nulign) {
+		HrToDeleteOccur zf10 = new HrToDeleteOccur(info, nulign);
+		ResourceBatchData<HrToDeleteOccur> data = new ResourceBatchData<HrToDeleteOccur>(Method.DELETE,zf10);
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
-		list.add(new ResourceBatchData(Method.DELETE, data));
+		list.add(data);
 		this.batchUpdate(processus, list, nudoss);		
 	}
 
