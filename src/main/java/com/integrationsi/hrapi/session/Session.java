@@ -26,7 +26,7 @@ public final class Session {
 
     private Session() throws  SessionBuildException, 
                               SessionConnectionException, 
-                              ConfigurationException, 
+                               
                               AuthenticationException, 
                               UserConnectionException, 
                               IllegalStateException {
@@ -45,7 +45,7 @@ public final class Session {
    * @throws AuthenticationException
    */
   protected final static Session getInstance() throws  SessionBuildException,
-      SessionConnectionException, ConfigurationException, AuthenticationException, UserConnectionException,
+      SessionConnectionException,  AuthenticationException, UserConnectionException,
       IllegalStateException {
         //Le "Double-Checked Singleton"/"Singleton doublement vérifié" permet 
          //d'éviter un appel coûteux à synchronized, 
