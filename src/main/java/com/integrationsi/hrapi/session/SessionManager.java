@@ -28,7 +28,7 @@ public class SessionManager {
 
         try {
 			return Session.getInstance().getSession();
-		} catch (AuthenticationException | SessionBuildException | SessionConnectionException | ConfigurationException
+		} catch (AuthenticationException | SessionBuildException | SessionConnectionException 
 				| UserConnectionException | IllegalStateException e) {
 			// TODO Auto-generated catch block
             e.printStackTrace();
@@ -75,14 +75,7 @@ public class SessionManager {
             se.setUser(user);
             se.setCategory("Erreur technique");
             throw se;
-        } catch (ConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            SessionException se = new SessionException();
-            se.setUser(user);
-            se.setCategory("Erreur de fichier de configuration");
-            throw se;
-        }
+        } 
             
     }
 
@@ -125,14 +118,7 @@ public class SessionManager {
 	            se.setUser("");
 	            se.setCategory("Erreur technique");
 	            throw se;
-	        } catch (ConfigurationException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	            SessionException se = new SessionException();
-	            se.setUser("");
-	            se.setCategory("Erreur de fichier de configuration");
-	            throw se;
-	        }
+	        } 
 	}
 
 
@@ -174,15 +160,7 @@ public class SessionManager {
             se.setUser(vsid);
             se.setCategory("Erreur technique");
             throw se;
-        } catch (ConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            SessionException se = new SessionException();
-            se.setUser(vsid);
-            se.setCategory("Erreur de fichier de configuration");
-            throw se;
-        }
-            
+        } 
     }
 
 
