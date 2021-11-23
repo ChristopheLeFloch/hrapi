@@ -153,7 +153,7 @@ public class User {
 	}
 	
 	
-	private HrUpdateCommitResult batchUpdate(
+	public HrUpdateCommitResult batchUpdate(
 					String processus, 
 					Map<Integer, List<? extends ResourceBatchData>> dataMap) {
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
