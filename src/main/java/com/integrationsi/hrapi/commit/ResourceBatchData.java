@@ -3,6 +3,13 @@ package com.integrationsi.hrapi.commit;
 
 import com.integrationsi.hrapi.hrentity.IHrEntity;
 
+/**
+ * Cette classe modélise une entité à mettre à jour : l'entité et le type de mise à jour (POST, PUT, DELETE).
+ *  
+ * @author xohd685
+ *
+ * @param <T>
+ */
 public class ResourceBatchData <T extends IHrEntity> {
 
 	public ResourceBatchData() {}
