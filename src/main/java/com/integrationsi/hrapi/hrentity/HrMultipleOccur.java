@@ -1,5 +1,7 @@
 package com.integrationsi.hrapi.hrentity;
 
+import java.util.HashMap;
+
 public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 
 
@@ -35,6 +37,16 @@ public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 		return null;
 	}
 	
+	@Override
+	public HrMultipleOccur create() {
+		super.create();
+		return this;
+	}
 
+	@Override
+	public HrMultipleOccur addValues(String key, Object value) {
+		super.addValues(key, value);
+		return this;
+	}
 
 }
