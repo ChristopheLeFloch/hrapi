@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Wed Aug 11 12:04:41 CEST 2021
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1628676281082
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact com.integrationsi\:hrapi\:jar\:javadoc\:0.0.1 from/to central (https\://repo.maven.apache.org/maven2)\: repo.maven.apache.org
