@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.integrationsi</groupId>
 	<artifactId>hrapi</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>hrapi</name>
 	<description>API for HR</description>
 
