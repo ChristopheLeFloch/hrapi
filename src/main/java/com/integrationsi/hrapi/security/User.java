@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
-import com.hraccess.openhr.IHRConversation;
 import com.hraccess.openhr.IHRRole;
 import com.hraccess.openhr.IHRUser;
 import com.hraccess.openhr.UpdateMode;
@@ -35,13 +34,10 @@ import com.integrationsi.hrapi.commit.ResourceBatchData;
 import com.integrationsi.hrapi.commit.TechnicalCommitError;
 import com.integrationsi.hrapi.commit.TechnicalError;
 import com.integrationsi.hrapi.commit.ResourceBatchData.Method;
-import com.integrationsi.hrapi.hrentity.HrEntity;
-import com.integrationsi.hrapi.hrentity.HrMultipleOccur;
 import com.integrationsi.hrapi.hrentity.HrToDeleteOccur;
-import com.integrationsi.hrapi.hrentity.HrUniqueOccur;
 import com.integrationsi.hrapi.hrentity.IHrEntity;
 import com.integrationsi.hrapi.hrentity.IHrMultipleEntity;
-import com.integrationsi.hrapi.util.SqlUtils;
+
 
 /**
  * Modélise un utilisateur Hr Access. Par rapport à l'interface standard openHr,
@@ -391,10 +387,10 @@ public class User {
 		 return this.batchUpdate(processus, list, nudoss);		
 	}
 	
-	public void delete(String processus, IHrEntity data, Integer nudoss) {
+	public HrUpdateCommitResult delete(String processus, IHrEntity data, Integer nudoss) {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.DELETE, data));
-		this.batchUpdate(processus, list, nudoss);		
+		return this.batchUpdate(processus, list, nudoss);		
 	}
 	
 	public HrUpdateCommitResult update(String processus,  IHrMultipleEntity data, Integer nudoss, Integer nulign) {		
@@ -410,12 +406,12 @@ public class User {
 		 return this.batchUpdate(processus, list, nudoss);		
 	}
 	
-	public void delete(String processus, String info, Integer nudoss, Integer nulign) {
+	public HrUpdateCommitResult delete(String processus, String info, Integer nudoss, Integer nulign) {
 		HrToDeleteOccur zf10 = new HrToDeleteOccur(info, nulign);
 		ResourceBatchData<HrToDeleteOccur> data = new ResourceBatchData<HrToDeleteOccur>(Method.DELETE,zf10);
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(data);
-		this.batchUpdate(processus, list, nudoss);		
+		return this.batchUpdate(processus, list, nudoss);		
 	}
 
 	private HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations)
