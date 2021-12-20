@@ -53,5 +53,16 @@ public class HrUpdateCommitResult {
 		this.businessErrors.add(new BusinessCommitError(d, e));
 	}
 	
+	/**
+	 * Mise à jour du result en agregant les erreurs du result passé en paramètre
+	 * @param result
+	 */
+	public void agregate(HrUpdateCommitResult result) {
+		if (result.getStatus() == CommitStatus.KO) this.setStatus(CommitStatus.KO);
+		else this.setStatus(CommitStatus.OK);
+		this.businessErrors.addAll(result.businessErrors);
+		this.technicalErrors.addAll(result.technicalErrors);
+	}
+	
 	
 }
