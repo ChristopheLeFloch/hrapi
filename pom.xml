@@ -58,4 +58,23 @@
 			<version>1.6</version>
 		</dependency>
 	</dependencies>
+		<distributionManagement>
+		<repository>
+		<!-- 
+		 -->
+			<id>nexus.releases</id>
+			<uniqueVersion>true</uniqueVersion>
+			<name>Releases</name>
+			<url>https://nexus.net.intra.laposte.fr/repository/j2b-gtm
+			</url>
+		</repository>
+		<!-- Publish snapshots here 
+		<snapshotRepository>
+			<id>nexus.snapshots</id>
+			<uniqueVersion>false</uniqueVersion>
+			<name>Snapshots</name>
+			<url>https://nexus.net.intra.laposte.fr/repository/j2b-gtm-snapshots
+			</url>
+		</snapshotRepository>-->
+	</distributionManagement>
 </project> 

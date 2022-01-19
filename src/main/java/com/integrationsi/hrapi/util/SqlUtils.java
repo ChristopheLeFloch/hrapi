@@ -43,6 +43,10 @@ public class SqlUtils {
 
 			return "to_date('"+dateString+"',"+"'DDMMYYYY')";		
 	}
+
+	public static String quote(String field) {
+		return "'" + field + "'";
+	}
     
     
     
