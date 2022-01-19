@@ -24,6 +24,8 @@ import com.hraccess.openhr.dossier.HRDossierFactory;
 import com.hraccess.openhr.dossier.HRDossierListIterator;
 import com.hraccess.openhr.dossier.HRKey;
 import com.hraccess.openhr.dossier.HROccur;
+import com.hraccess.openhr.dossier.HROccurListIterator;
+import com.hraccess.openhr.dossier.HRStringValuesMap;
 import com.hraccess.openhr.dossier.IHRKey;
 import com.hraccess.openhr.exception.UserConnectionException;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
@@ -272,7 +274,7 @@ public class User {
 				}
 			}
 
-			List<IHrEntity> updatedOccurs = deleteMap.get(nudoss);
+			List<IHrEntity> updatedOccurs = updateMap.get(nudoss);
 			if (updatedOccurs != null) {
 				for (IHrEntity entity : updatedOccurs) {
 					try {
@@ -332,25 +334,26 @@ public class User {
 	}
 
 	private HROccur updateEntityFromDossier(HRDossier hrDossier, IHrEntity entity) throws InvalidUpdateException {
-		HROccur hrOccur = this.getOccur(hrDossier, entity);
-		if (hrOccur == null)
-			throw new InvalidUpdateException(TechnicalError.UNKNOWN_OCCUR);
+		HROccur hrOccur = null;
+		try {
+			hrOccur = this.getOccur(hrDossier, entity);
+			if (hrOccur == null)
+				throw new InvalidUpdateException(TechnicalError.UNKNOWN_OCCUR, entity.getMainInformation());
 
-		// Modification des valeurs
-		for (Map.Entry<String, Object> entry : entity.getHrEntityMap().entrySet()) {
-			try {
+			// Modification des valeurs
+			for (Map.Entry<String, Object> entry : entity.getHrEntityMap().entrySet()) {
 				hrOccur.setValue(entry.getKey(), entry.getValue());
-			} catch (HRDossierCollectionException e) {
-				throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
-			} catch (Exception e) {
-				throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
 			}
+		} catch (HRDossierCollectionException e) {
+			throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
+		} catch (Exception e) {
+			throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
 		}
 
 		return hrOccur;
 	}
 
-	private HROccur getOccur(HRDossier hrDossier, IHrEntity entity) {
+	private HROccur getOccur(HRDossier hrDossier, IHrEntity entity) throws HRDossierCollectionException {
 
 		HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
 		boolean isMultiple = dataSection.isMultiple();
@@ -362,10 +365,29 @@ public class User {
 			IHrMultipleEntity om = (IHrMultipleEntity) entity;
 			if (om.getId() == null) {
 				// on recupere l'occurrence depuis la clé fonctionnelle
+				IHRKey ek = new HRKey(om.getHrEntityKey());
+
+				boolean equals = true;
+				for (IHRKey k : dataSection.getOccurKeys()) {
+					System.out.println(ek.toString().equals(k.toString()));
+					if (ek.toString().equals(k.toString())) {
+						HROccurListIterator oc = dataSection.getOccurByKey(k);
+						if (oc.size() == 1)
+							hrOccur = oc.next();
+					}
+					;
+				}
+				
+				// pas d'occurrence, on l'initialise
+				if (hrOccur == null)
+					hrOccur = dataSection.createOccur();
+
 			} else {
 				// on récupère l'occurrence depuis le nulign,
 				hrOccur = dataSection.getOccurByNulign(om.getId());
 			}
+		} else {
+			hrOccur = dataSection.getOccur();
 		}
 
 		return hrOccur;
@@ -383,10 +405,12 @@ public class User {
 				HRKey k = new HRKey(entityM.getHrEntityKey());
 				hrOccur = dataSection.createOccur(k);
 			} else {
-				// attention lors de la creation d'un dossier, une occurrence de 00 est crée automatiquement
+				// attention lors de la creation d'un dossier, une occurrence de 00 est crée
+				// automatiquement
 				// la ligne ci-dessous renvoit donc une ligne
 				hrOccur = dataSection.getOccur();
-				if (hrOccur == null) hrOccur = dataSection.createOccur();
+				if (hrOccur == null)
+					hrOccur = dataSection.createOccur();
 			}
 		} catch (HRDossierCollectionException e) {
 			throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
