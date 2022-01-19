@@ -383,7 +383,10 @@ public class User {
 				HRKey k = new HRKey(entityM.getHrEntityKey());
 				hrOccur = dataSection.createOccur(k);
 			} else {
-				hrOccur = dataSection.createOccur();
+				// attention lors de la creation d'un dossier, une occurrence de 00 est crée automatiquement
+				// la ligne ci-dessous renvoit donc une ligne
+				hrOccur = dataSection.getOccur();
+				if (hrOccur == null) hrOccur = dataSection.createOccur();
 			}
 		} catch (HRDossierCollectionException e) {
 			throw new InvalidUpdateException(TechnicalError.BAD_DATA_FORMAT, e.getMessage());
