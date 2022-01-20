@@ -2,7 +2,7 @@ package com.integrationsi.hrapi.hrentity;
 
 /**
  * Cette classe abstraite modelise une entite Hr manipulee en tant que table.
- * L'entite est liee a�une information Hr principale mais peut contenir d'autres informations secondaires.
+ * L'entite est liee à une information Hr principale mais peut contenir d'autres informations secondaires.
  * L'information principale peut-etre mise à jour mais pas les autres informations secondaires.
  *
  */
