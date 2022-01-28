@@ -78,7 +78,7 @@ public class HrAuthentication  {
 
 
 	public boolean isConnected() {
-		return this.hrUser.isConnected();
+		return this.hrUser.isValid();
 	}
 	
     public boolean isAuthenticated() {

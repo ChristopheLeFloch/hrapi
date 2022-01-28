@@ -155,7 +155,6 @@ public class User {
 					Map<Integer, List<? extends ResourceBatchData>> dataMap) throws NullRoleException, NoSessionException {
 		
 		if (this.hrRole == null) throw new NullRoleException();
-		if (!this.hrUser.isConnected()) throw new NullRoleException();
 		try {
 			this.hrUser.isValid();}
 		catch (Exception e) {
