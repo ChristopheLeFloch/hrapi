@@ -37,6 +37,7 @@ import com.integrationsi.hrapi.commit.ResourceBatchData.Method;
 import com.integrationsi.hrapi.hrentity.HrToDeleteOccur;
 import com.integrationsi.hrapi.hrentity.IHrEntity;
 import com.integrationsi.hrapi.hrentity.IHrMultipleEntity;
+import com.integrationsi.hrapi.util.SqlUtils;
 
 
 /**
@@ -223,8 +224,7 @@ public class User {
 			return result;
 		}
 
-		for (Integer nudoss: keys) {
-		String select = "select nudoss from " + structure + "00 where nudoss = " + nudoss;
+		String select = "select nudoss from " + structure + "00 where nudoss in " + SqlUtils.getSqlNudossList(new ArrayList(keys));
 		HRDossierListIterator iterator;
 		try {
 			iterator = collection.loadDossiers(select);
@@ -356,7 +356,6 @@ public class User {
 					}
 				}
 			}
-		}
 		}
 
 		CommitResult r;
