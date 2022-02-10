@@ -60,8 +60,14 @@ public class HrUpdateCommitResult {
 	public void agregate(HrUpdateCommitResult result) {
 		if (result.getStatus() == CommitStatus.KO) this.setStatus(CommitStatus.KO);
 		else this.setStatus(CommitStatus.OK);
-		this.businessErrors.addAll(result.businessErrors);
-		this.technicalErrors.addAll(result.technicalErrors);
+		if (result.businessErrors != null) {
+			if (this.businessErrors == null) this.businessErrors = new ArrayList<BusinessCommitError>();
+			this.businessErrors.addAll(result.businessErrors);		
+		}
+		if (result.technicalErrors != null) {
+			if (this.technicalErrors == null) this.technicalErrors = new ArrayList<TechnicalCommitError>();
+			this.technicalErrors.addAll(result.technicalErrors);		
+		}
 	}
 	
 	
