@@ -47,6 +47,14 @@ public class SqlUtils {
 	public static String quote(String field) {
 		return "'" + field + "'";
 	}
+
+	/**
+	 * Fournit la date du jour au format java.sql.Date
+	 * @return
+	 */
+	public static Date today() {
+		return new Date(new java.util.Date().getTime());
+	}
     
     
     

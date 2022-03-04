@@ -41,8 +41,8 @@ import com.integrationsi.hrapi.hrentity.IHrEntity;
 import com.integrationsi.hrapi.hrentity.IHrMultipleEntity;
 
 /**
- * Modélise un utilisateur Hr Access. Par rapport à l'interface standard openHr,
- * celle-ci à une interface simplifiée.
+ * Modï¿½lise un utilisateur Hr Access. Par rapport ï¿½ l'interface standard openHr,
+ * celle-ci ï¿½ une interface simplifiï¿½e.
  *
  * @author CLEFL
  *
@@ -172,13 +172,13 @@ public class User {
 		Map<Integer, List<IHrEntity>> updateMap = new HashMap<Integer, List<IHrEntity>>();
 		Map<Integer, List<IHrEntity>> deleteMap = new HashMap<Integer, List<IHrEntity>>();
 
-		// liste des informations à traiter
+		// liste des informations ï¿½ traiter
 		HashSet<String> informations = new HashSet<String>();
-		// structure à traiter
+		// structure ï¿½ traiter
 		String structure = null;
 
-		// construction de la liste des dossiers à traiter
-		// et de la liste des informations à traiter
+		// construction de la liste des dossiers ï¿½ traiter
+		// et de la liste des informations ï¿½ traiter
 		for (Entry<Integer, List<? extends ResourceBatchData>> es : dataMap.entrySet()) {
 			Integer nudoss = es.getKey();
 			List<? extends ResourceBatchData> datas = es.getValue();
@@ -196,7 +196,7 @@ public class User {
 					map = deleteMap;
 					break;
 				default:
-					throw new InvalidUpdateException(TechnicalError.UNKNOWN, "Méthode invalide: " + d.getMethod());
+					throw new InvalidUpdateException(TechnicalError.UNKNOWN, "MÃ©thode invalide: " + d.getMethod());
 
 				}
 
@@ -209,7 +209,7 @@ public class User {
 				}
 				occurs.add(e);
 
-				// TODO contrôler qu'il n'y a qu'une seule structure dans le flot
+				// TODO contrï¿½ler qu'il n'y a qu'une seule structure dans le flot
 				structure = e.getMainStructure();
 				informations.add(e.getMainInformation());
 
@@ -364,7 +364,7 @@ public class User {
 		if (isMultiple) {
 			IHrMultipleEntity om = (IHrMultipleEntity) entity;
 			if (om.getId() == null) {
-				// on recupere l'occurrence depuis la clé fonctionnelle
+				// on recupere l'occurrence depuis la clï¿½ fonctionnelle
 				IHRKey ek = new HRKey(om.getHrEntityKey());
 
 				boolean equals = true;
@@ -377,17 +377,20 @@ public class User {
 					}
 					;
 				}
-				
+
 				// pas d'occurrence, on l'initialise
 				if (hrOccur == null)
 					hrOccur = dataSection.createOccur();
 
 			} else {
-				// on récupère l'occurrence depuis le nulign,
+				// on rÃ©cupÃ¨re l'occurrence depuis le nulign,
 				hrOccur = dataSection.getOccurByNulign(om.getId());
 			}
 		} else {
 			hrOccur = dataSection.getOccur();
+			// pas d'occurrence, on l'initialise
+			if (hrOccur == null)
+				hrOccur = dataSection.createOccur();
 		}
 
 		return hrOccur;
@@ -405,7 +408,7 @@ public class User {
 				HRKey k = new HRKey(entityM.getHrEntityKey());
 				hrOccur = dataSection.createOccur(k);
 			} else {
-				// attention lors de la creation d'un dossier, une occurrence de 00 est crée
+				// attention lors de la creation d'un dossier, une occurrence de 00 est crï¿½e
 				// automatiquement
 				// la ligne ci-dessous renvoit donc une ligne
 				hrOccur = dataSection.getOccur();
@@ -431,11 +434,11 @@ public class User {
 	}
 
 	private void deleteEntityFromDossier(HRDossier hrDossier, IHrEntity entity) throws InvalidUpdateException {
-		// récupération de l'information hr
+		// rï¿½cupï¿½ration de l'information hr
 		HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
 		boolean isMultiple = dataSection.isMultiple();
 
-		// ocurrence à supprimer, si c'est une multiple, on charge à partir de l'id
+		// ocurrence ï¿½ supprimer, si c'est une multiple, on charge ï¿½ partir de l'id
 		// sinon su supprime l'unique occurrence existente
 		HROccur hrOccur = null;
 		try {
@@ -491,6 +494,38 @@ public class User {
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
+	public HrUpdateCommitResult deleteDossier(String processus, String structure, Integer nudoss) {
+
+		HrUpdateCommitResult result = new HrUpdateCommitResult();
+		ArrayList<String> infoList = new ArrayList<String>();
+		HRDossierCollection collection;
+		try {
+			collection = this.initDossierCollection(processus, structure, infoList);
+		} catch (HRDossierCollectionException e) {
+			// impossible d'initialiser la collection
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.INIT_COLLECTION, e.getMessage()));
+			return result;
+		}
+
+		HRDossier hrDossier;
+
+		try {
+			hrDossier = collection.loadDossier(nudoss);
+			hrDossier.delete();
+		} catch (HRDossierCollectionException e) {
+			// impossible d'initialiser la collection
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.LOAD_COLLECTION, e.getMessage()));
+			return result;
+		}
+		result.setStatus(CommitStatus.OK);
+
+		return result;
+	}
+
 	private HRDossierCollection initDossierCollection(String processus, String structure, List<String> informations)
 			throws HRDossierCollectionException {
 
@@ -521,6 +556,10 @@ public class User {
 
 	public boolean isConnected() {
 		return this.hrUser.isConnected();
+	}
+
+	public boolean isValid() {
+		return this.hrUser.isValid();
 	}
 
 }
