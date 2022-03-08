@@ -143,14 +143,14 @@ public class User {
 	}
 
 	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> list, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		HashMap<Integer, List<? extends ResourceBatchData>> dataMap = new HashMap<Integer, List<? extends ResourceBatchData>>();
 		dataMap.put(nudoss, list);
 		return this.batchUpdate(processus, dataMap);
 	}
 
 	public HrUpdateCommitResult batchUpdate(String processus, Map<Integer, List<? extends ResourceBatchData>> dataMap)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 
 		if (this.hrRole == null)
 			throw new NullRoleException();
@@ -369,7 +369,6 @@ public class User {
 
 				boolean equals = true;
 				for (IHRKey k : dataSection.getOccurKeys()) {
-					System.out.println(ek.toString().equals(k.toString()));
 					if (ek.toString().equals(k.toString())) {
 						HROccurListIterator oc = dataSection.getOccurByKey(k);
 						if (oc.size() == 1)
@@ -433,7 +432,7 @@ public class User {
 
 	}
 
-	private void deleteEntityFromDossier(HRDossier hrDossier, IHrEntity entity) throws InvalidUpdateException {
+	private void deleteEntityFromDossier(HRDossier hrDossier, IHrEntity entity) throws InvalidUpdateException, UnknownOccurException {
 		// r�cup�ration de l'information hr
 		HRDataSect dataSection = hrDossier.getDataSectionByName(entity.getMainInformation());
 		boolean isMultiple = dataSection.isMultiple();
@@ -441,6 +440,14 @@ public class User {
 		// ocurrence � supprimer, si c'est une multiple, on charge � partir de l'id
 		// sinon su supprime l'unique occurrence existente
 		HROccur hrOccur = null;
+		if (isMultiple) {
+			IHrMultipleEntity entityM = (IHrMultipleEntity) entity;
+			hrOccur = hrDossier.getDataSectionByName(entity.getMainInformation()).getOccurByNulign(entityM.getId());
+		}
+		else {
+			hrOccur = hrDossier.getDataSectionByName(entity.getMainInformation()).getOccur();
+		}
+		if (hrOccur == null) throw new UnknownOccurException();
 		try {
 			hrOccur.delete();
 		} catch (HRDossierCollectionException e) {
@@ -450,28 +457,28 @@ public class User {
 	}
 
 	public HrUpdateCommitResult update(String processus, IHrEntity data, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult create(String processus, IHrEntity data, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult delete(String processus, IHrEntity data, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.DELETE, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult update(String processus, IHrMultipleEntity data, Integer nudoss, Integer nulign)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		data.setId(nulign);
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
@@ -479,14 +486,14 @@ public class User {
 	}
 
 	public HrUpdateCommitResult create(String processus, IHrMultipleEntity data, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult delete(String processus, String info, Integer nudoss, Integer nulign)
-			throws NullRoleException, NoSessionException, InvalidUpdateException {
+			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		HrToDeleteOccur zf10 = new HrToDeleteOccur(info, nulign);
 		ResourceBatchData<HrToDeleteOccur> data = new ResourceBatchData<HrToDeleteOccur>(Method.DELETE, zf10);
 		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
@@ -494,8 +501,18 @@ public class User {
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
-	public HrUpdateCommitResult deleteDossier(String processus, String structure, Integer nudoss) {
+	public HrUpdateCommitResult deleteDossier(String processus, String structure, Integer nudoss) throws NullRoleException, NoSessionException, UnknownDossierException {
 
+		if (this.hrRole == null)
+			throw new NullRoleException();
+		if (!this.hrUser.isConnected())
+			throw new NullRoleException();
+		try {
+			this.hrUser.isValid();
+		} catch (Exception e) {
+			throw new NoSessionException();
+		}
+		
 		HrUpdateCommitResult result = new HrUpdateCommitResult();
 		ArrayList<String> infoList = new ArrayList<String>();
 		HRDossierCollection collection;
@@ -520,8 +537,39 @@ public class User {
 			result.setStatus(CommitStatus.KO);
 			result.addTechnicalError(new TechnicalCommitError(TechnicalError.LOAD_COLLECTION, e.getMessage()));
 			return result;
+		}	catch (NullPointerException e) {
+			// impossible d'initialiser la collection
+			e.printStackTrace();
+			throw new UnknownDossierException();
+		}	
+
+	
+		
+		CommitResult r;
+		try {
+			r = collection.commitAllDossiers().getDossierCommitResult();
+		} catch (HRDossierCollectionCommitException e) {
+			e.printStackTrace();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.COMMIT_COLLECTION, e.getMessage()));
+			return result;
 		}
-		result.setStatus(CommitStatus.OK);
+
+		Error[] errors = r.getErrors();
+		if (errors.length == 0) {
+			result.setStatus(CommitStatus.OK);
+			return result;
+		}
+
+		result.setStatus(CommitStatus.HR_ERRORS);
+		for (com.hraccess.openhr.msg.HRResultUserError.Error error : r.getErrors()) {
+			if (error.weight == 5) {
+				IHRKey key = r.getErrorDossierId(error).getDossierKey();
+				HRDossier d = collection.getDossier(key);
+				result.addBusinessError(d, error);
+			}
+		}
+
 
 		return result;
 	}
