@@ -21,6 +21,7 @@ import com.hraccess.openhr.dossier.HRDossierCollectionCommitException;
 import com.hraccess.openhr.dossier.HRDossierCollectionException;
 import com.hraccess.openhr.dossier.HRDossierCollectionParameters;
 import com.hraccess.openhr.dossier.HRDossierFactory;
+import com.hraccess.openhr.dossier.HRDossierId;
 import com.hraccess.openhr.dossier.HRDossierListIterator;
 import com.hraccess.openhr.dossier.HRKey;
 import com.hraccess.openhr.dossier.HROccur;
@@ -313,6 +314,9 @@ public class User {
 			result.addTechnicalError(new TechnicalCommitError(TechnicalError.COMMIT_COLLECTION, e.getMessage()));
 			return result;
 		}
+		
+		result.setDossierIds(r.getCreatedDossierIds());
+		result.getDossierIds().addAll(r.getModifiedDossierIds());
 
 		Error[] errors = r.getErrors();
 		if (errors.length == 0) {
@@ -554,6 +558,10 @@ public class User {
 			result.addTechnicalError(new TechnicalCommitError(TechnicalError.COMMIT_COLLECTION, e.getMessage()));
 			return result;
 		}
+		
+		
+				
+		result.setDossierIds(r.getDeletedDossierIds());
 
 		Error[] errors = r.getErrors();
 		if (errors.length == 0) {

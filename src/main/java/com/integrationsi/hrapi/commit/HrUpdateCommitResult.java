@@ -4,10 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hraccess.openhr.dossier.HRDossier;
+import com.hraccess.openhr.dossier.HRDossierId;
 import com.hraccess.openhr.msg.HRResultUserError.Error;
 
 public class HrUpdateCommitResult {
 	
+	private List<HRDossierId> DossierIds;
+	public List<HRDossierId> getDossierIds() {
+		return DossierIds;
+	}
+	public void setDossierIds(List<HRDossierId> hrDossierIds) {
+		DossierIds = hrDossierIds;
+	}
+
 	/**
 	 * Global status for commit
 	 */
@@ -54,7 +63,7 @@ public class HrUpdateCommitResult {
 	}
 	
 	/**
-	 * Mise à jour du result en agregant les erreurs du result passé en paramètre
+	 * Mise ï¿½ jour du result en agregant les erreurs du result passï¿½ en paramï¿½tre
 	 * @param result
 	 */
 	public void agregate(HrUpdateCommitResult result) {
