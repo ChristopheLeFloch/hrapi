@@ -9,6 +9,10 @@ import com.hraccess.openhr.msg.HRResultUserError.Error;
 
 public class HrUpdateCommitResult {
 	
+	public HrUpdateCommitResult() {
+		this.setDossierIds(new ArrayList<HRDossierId>());
+	}
+	
 	private List<HRDossierId> DossierIds;
 	public List<HRDossierId> getDossierIds() {
 		return DossierIds;

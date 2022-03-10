@@ -315,7 +315,8 @@ public class User {
 			return result;
 		}
 		
-		result.setDossierIds(r.getCreatedDossierIds());
+		
+		result.getDossierIds().addAll(r.getCreatedDossierIds());
 		result.getDossierIds().addAll(r.getModifiedDossierIds());
 
 		Error[] errors = r.getErrors();
