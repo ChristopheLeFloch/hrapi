@@ -1,21 +1,16 @@
 package com.integrationsi.hrapi.hrentity;
 
-import java.util.HashMap;
-
 public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 
 
 	private Integer id;
 
-	private Object[] keys;
-	public Object[] getKeys() {
-		return keys;
-	}
+	private Object[] hrEntityKey;
 
-	public void setKeys(Object[] keys) {
-		this.keys = keys;
-	}
 
+	public HrMultipleOccur() {
+
+	}
 	
 	public HrMultipleOccur(String information,  Integer nulign) {
 		super(information);
@@ -34,9 +29,13 @@ public class HrMultipleOccur extends HrUniqueOccur implements IHrMultipleEntity{
 	
 	@Override
 	public Object[] getHrEntityKey() {
-		return null;
+		return hrEntityKey;
 	}
 	
+	public void setHrEntityKey(Object[] hrEntityKey) {
+		this.hrEntityKey = hrEntityKey;
+	}
+
 	@Override
 	public HrMultipleOccur create() {
 		super.create();

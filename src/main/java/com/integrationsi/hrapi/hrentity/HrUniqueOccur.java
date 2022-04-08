@@ -7,15 +7,14 @@ public class HrUniqueOccur implements IHrEntity{
 
 
 	private String information;
-	private Map<String, Object> values;
-	public Map<String, Object> getValues() {
-		return values;
-	}
-
-	public void setValues(Map<String, Object> values) {
-		this.values = values;
-	}
 	
+
+	private Map<String, Object> hrEntityMap;
+	
+
+	public HrUniqueOccur() {
+
+	}
 	
 	public HrUniqueOccur(String information) {
 		this.information = information;
@@ -33,19 +32,32 @@ public class HrUniqueOccur implements IHrEntity{
 		return information.substring(2,4);
 	}
 
-	@Override
-	public Map<String, Object> getHrEntityMap() {
-		return values;
+
+	public Map<String, Object> setHrEntityMap() {
+		return hrEntityMap;
 	}
 	
+	@Override
+	public Map<String, Object> getHrEntityMap() {
+		return hrEntityMap;
+	}
+	
+	public String getInformation() {
+		return information;
+	}
+
+	public void setInformation(String information) {
+		this.information = information;
+	}
+
 	public HrUniqueOccur create() {
-		this.values = new HashMap<String, Object>();
+		this.hrEntityMap = new HashMap<String, Object>();
 		return this;
 	}
 
 	
 	public HrUniqueOccur addValues(String key, Object value) {
-		this.values.put(key, value);
+		this.hrEntityMap.put(key, value);
 		return this;
 	}
 

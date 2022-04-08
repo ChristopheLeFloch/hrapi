@@ -12,8 +12,18 @@ public abstract class HrMultipleEntity  extends HrEntity implements IHrMultipleE
 		this.id = id;
 	}
 	
+	public String convertNull(String s) {
+		if (s == null) return "";
+		return s;
+	}
 	
-	
+	public Integer convertNull(Integer i) {
+		if (i == null) return 0;
+		return i;
+	}
 
-
+	public Boolean convertNull(Boolean b) {
+		if (b == null) return false;
+		return b;
+	}
 }
