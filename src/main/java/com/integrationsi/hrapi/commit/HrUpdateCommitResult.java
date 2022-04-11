@@ -42,7 +42,6 @@ public class HrUpdateCommitResult {
 	public void setBusinessErrors(List<BusinessCommitError> errors) {
 		this.businessErrors = errors;
 	}
-	
 
 	/**
 	 * Liste des erreurs  metier retournees par le commit

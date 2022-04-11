@@ -143,14 +143,14 @@ public class User {
 		this.hrUser.disconnect();
 	}
 
-	public HrUpdateCommitResult batchUpdate(String processus, List<? extends ResourceBatchData> list, Integer nudoss)
+	public <T extends IHrMultipleEntity> HrUpdateCommitResult batchUpdate(String processus, List<ResourceBatchData<T>> list, Integer nudoss)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		HashMap<Integer, List<? extends ResourceBatchData>> dataMap = new HashMap<Integer, List<? extends ResourceBatchData>>();
+		HashMap<Integer, List<ResourceBatchData<T>>> dataMap = new HashMap<Integer, List<ResourceBatchData<T>>>();
 		dataMap.put(nudoss, list);
 		return this.batchUpdate(processus, dataMap);
 	}
 
-	public HrUpdateCommitResult batchUpdate(String processus, Map<Integer, List<? extends ResourceBatchData>> dataMap)
+	public <T extends IHrMultipleEntity> HrUpdateCommitResult batchUpdate(String processus, Map<Integer, List<ResourceBatchData<T>>> dataMap)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 
 		if (this.hrRole == null)
@@ -180,7 +180,7 @@ public class User {
 
 		// construction de la liste des dossiers � traiter
 		// et de la liste des informations � traiter
-		for (Entry<Integer, List<? extends ResourceBatchData>> es : dataMap.entrySet()) {
+		for (Entry<Integer, List<ResourceBatchData<T>>> es : dataMap.entrySet()) {
 			Integer nudoss = es.getKey();
 			List<? extends ResourceBatchData> datas = es.getValue();
 
@@ -217,7 +217,13 @@ public class User {
 			}
 			;
 		}
-		;
+		
+		if (informations.isEmpty()) {
+			TechnicalCommitError e = new TechnicalCommitError();
+			result.setStatus(CommitStatus.KO);
+			result.addTechnicalError(new TechnicalCommitError(TechnicalError.INIT_COLLECTION, "Aucune information à mettre à jour"));
+			return result;
+		}
 
 		Set<Integer> keys = new HashSet<Integer>();
 		keys.addAll(createMap.keySet());
@@ -461,23 +467,17 @@ public class User {
 
 	}
 
-	public HrUpdateCommitResult update(String processus, IHrEntity data, Integer nudoss)
+	public HrUpdateCommitResult update(String processus, IHrMultipleEntity data, Integer nudoss)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		List<ResourceBatchData<IHrMultipleEntity>> list = new ArrayList<ResourceBatchData<IHrMultipleEntity>>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
-	public HrUpdateCommitResult create(String processus, IHrEntity data, Integer nudoss)
-			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
-		list.add(new ResourceBatchData(Method.PUT, data));
-		return this.batchUpdate(processus, list, nudoss);
-	}
 
-	public HrUpdateCommitResult delete(String processus, IHrEntity data, Integer nudoss)
+	public HrUpdateCommitResult delete(String processus, IHrMultipleEntity data, Integer nudoss)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		List<ResourceBatchData<IHrMultipleEntity>> list = new ArrayList<ResourceBatchData<IHrMultipleEntity>>();
 		list.add(new ResourceBatchData(Method.DELETE, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
@@ -485,23 +485,23 @@ public class User {
 	public HrUpdateCommitResult update(String processus, IHrMultipleEntity data, Integer nudoss, Integer nulign)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
 		data.setId(nulign);
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		List<ResourceBatchData<IHrMultipleEntity>> list = new ArrayList<ResourceBatchData<IHrMultipleEntity>>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult create(String processus, IHrMultipleEntity data, Integer nudoss)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		List<ResourceBatchData<IHrMultipleEntity>> list = new ArrayList<ResourceBatchData<IHrMultipleEntity>>();
 		list.add(new ResourceBatchData(Method.PUT, data));
 		return this.batchUpdate(processus, list, nudoss);
 	}
 
 	public HrUpdateCommitResult delete(String processus, String info, Integer nudoss, Integer nulign)
 			throws NullRoleException, NoSessionException, InvalidUpdateException, UnknownOccurException {
-		HrToDeleteOccur zf10 = new HrToDeleteOccur(info, nulign);
-		ResourceBatchData<HrToDeleteOccur> data = new ResourceBatchData<HrToDeleteOccur>(Method.DELETE, zf10);
-		List<ResourceBatchData> list = new ArrayList<ResourceBatchData>();
+		IHrMultipleEntity zf10 = new HrToDeleteOccur(info, nulign);
+		ResourceBatchData<IHrMultipleEntity> data = new ResourceBatchData<IHrMultipleEntity>(Method.DELETE, zf10);
+		List<ResourceBatchData<IHrMultipleEntity>> list = new ArrayList<ResourceBatchData<IHrMultipleEntity>>();
 		list.add(data);
 		return this.batchUpdate(processus, list, nudoss);
 	}
